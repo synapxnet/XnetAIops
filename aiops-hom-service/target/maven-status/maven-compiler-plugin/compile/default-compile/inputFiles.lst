@@ -1,0 +1,12 @@
+D:\Xnet\XnetAIops\aiops-hom-service\src\main\java\com\synapxnet\aiopshomservice\controller\HostController.java
+D:\Xnet\XnetAIops\aiops-hom-service\src\main\java\com\synapxnet\aiopshomservice\service\impl\HostServiceImpl.java
+D:\Xnet\XnetAIops\aiops-hom-service\src\main\java\com\synapxnet\aiopshomservice\AiopsHomServiceApplication.java
+D:\Xnet\XnetAIops\aiops-hom-service\src\main\java\com\synapxnet\aiopshomservice\entity\Host.java
+D:\Xnet\XnetAIops\aiops-hom-service\src\main\java\com\synapxnet\aiopshomservice\common\GlobalExceptionHandler.java
+D:\Xnet\XnetAIops\aiops-hom-service\src\main\java\com\synapxnet\aiopshomservice\entity\Rack.java
+D:\Xnet\XnetAIops\aiops-hom-service\src\main\java\com\synapxnet\aiopshomservice\mapper\HostMapper.java
+D:\Xnet\XnetAIops\aiops-hom-service\src\main\java\com\synapxnet\aiopshomservice\config\WebConfig.java
+D:\Xnet\XnetAIops\aiops-hom-service\src\main\java\com\synapxnet\aiopshomservice\service\HostService.java
+D:\Xnet\XnetAIops\aiops-hom-service\src\main\java\com\synapxnet\aiopshomservice\common\Result.java
+D:\Xnet\XnetAIops\aiops-hom-service\src\main\java\com\synapxnet\aiopshomservice\controller\RackController.java
+D:\Xnet\XnetAIops\aiops-hom-service\src\main\java\com\synapxnet\aiopshomservice\service\SshService.java

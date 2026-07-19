@@ -1,0 +1,12 @@
+com\synapxnet\aiopshomservice\entity\Rack.class
+com\synapxnet\aiopshomservice\common\GlobalExceptionHandler.class
+com\synapxnet\aiopshomservice\config\WebConfig.class
+com\synapxnet\aiopshomservice\entity\Host.class
+com\synapxnet\aiopshomservice\mapper\HostMapper.class
+com\synapxnet\aiopshomservice\controller\RackController.class
+com\synapxnet\aiopshomservice\AiopsHomServiceApplication.class
+com\synapxnet\aiopshomservice\controller\HostController.class
+com\synapxnet\aiopshomservice\service\HostService.class
+com\synapxnet\aiopshomservice\common\Result.class
+com\synapxnet\aiopshomservice\service\impl\HostServiceImpl.class
+com\synapxnet\aiopshomservice\service\SshService.class
