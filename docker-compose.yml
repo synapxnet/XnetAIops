@@ -1,0 +1,136 @@
+version: '3.8'
+
+services:
+  # ==================== 前端 Nginx ====================
+  aiops-web:
+    image: nginx:alpine
+    container_name: aiops-web
+    ports:
+      - "${WEB_PORT:-81}:80"
+    volumes:
+      - ${WEB_DIST_PATH:-../XnetAIops-web/playground/dist}:/usr/share/nginx/html:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - aiops-usr-service
+      - aiops-clm-service
+      - aiops-hom-service
+      - aiops-svm-service
+      - aiops-mon-service
+      - aiops-k8s-service
+      - aiops-reg-service
+    networks:
+      - aiops-net
+    restart: unless-stopped
+
+  # ==================== 后端微服务 ====================
+  aiops-clm-service:
+    build:
+      context: ./aiops-clm-service
+    image: aiops-clm-service:${TAG:-latest}
+    container_name: aiops-clm-service
+    ports:
+      - "${CLM_PORT:-9181}:9181"
+    environment:
+      - DB_HOST=${DB_HOST:?DB_HOST is required}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
+    networks:
+      - aiops-net
+    restart: unless-stopped
+
+  aiops-hom-service:
+    build:
+      context: ./aiops-hom-service
+    image: aiops-hom-service:${TAG:-latest}
+    container_name: aiops-hom-service
+    ports:
+      - "${HOM_PORT:-9182}:9182"
+    environment:
+      - DB_HOST=${DB_HOST:?DB_HOST is required}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
+    networks:
+      - aiops-net
+    restart: unless-stopped
+
+  aiops-svm-service:
+    build:
+      context: ./aiops-svm-service
+    image: aiops-svm-service:${TAG:-latest}
+    container_name: aiops-svm-service
+    ports:
+      - "${SVM_PORT:-9183}:9183"
+    environment:
+      - DB_HOST=${DB_HOST:?DB_HOST is required}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
+    networks:
+      - aiops-net
+    restart: unless-stopped
+
+  aiops-mon-service:
+    build:
+      context: ./aiops-mon-service
+    image: aiops-mon-service:${TAG:-latest}
+    container_name: aiops-mon-service
+    ports:
+      - "${MON_PORT:-9184}:9184"
+    environment:
+      - DB_HOST=${DB_HOST:?DB_HOST is required}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
+    networks:
+      - aiops-net
+    restart: unless-stopped
+
+  aiops-usr-service:
+    build:
+      context: ./aiops-usr-service
+    image: aiops-usr-service:${TAG:-latest}
+    container_name: aiops-usr-service
+    ports:
+      - "${USR_PORT:-9185}:9185"
+    environment:
+      - DB_HOST=${DB_HOST:?DB_HOST is required}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
+      - REDIS_HOST=${REDIS_HOST:?REDIS_HOST is required}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
+    networks:
+      - aiops-net
+    restart: unless-stopped
+
+  aiops-k8s-service:
+    build:
+      context: ./aiops-k8s-service
+    image: aiops-k8s-service:${TAG:-latest}
+    container_name: aiops-k8s-service
+    ports:
+      - "${K8S_PORT:-9186}:9186"
+    environment:
+      - DB_HOST=${DB_HOST:?DB_HOST is required}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
+    networks:
+      - aiops-net
+    restart: unless-stopped
+
+  aiops-reg-service:
+    build:
+      context: ./aiops-reg-service
+    image: aiops-reg-service:${TAG:-latest}
+    container_name: aiops-reg-service
+    ports:
+      - "${REG_PORT:-9187}:9187"
+    environment:
+      - DB_HOST=${DB_HOST:?DB_HOST is required}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
+    networks:
+      - aiops-net
+    restart: unless-stopped
+
+networks:
+  aiops-net:
+    driver: bridge

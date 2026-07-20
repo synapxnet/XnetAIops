@@ -1,0 +1,20 @@
+# Build output
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# OS and logs
+.DS_Store
+Thumbs.db
+*.log
+
+# Local environment
+.env
