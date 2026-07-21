@@ -28,8 +28,10 @@
 | ![XnetAIops Kubernetes 集群](./docs/images/xnetaiops-kubernetes.png) | ![XnetAIops 服务编排](./docs/images/xnetaiops-service.png) |
 | 监控告警 | 镜像仓库 |
 | ![XnetAIops 监控告警](./docs/images/xnetaiops-monitor.png) | ![XnetAIops 镜像仓库](./docs/images/xnetaiops-registry.png) |
-| 多租户用户 | 3D 总览 |
-| ![XnetAIops 多租户用户](./docs/images/xnetaiops-users.png) | ![XnetAIops 集群 3D 总览](./docs/images/xnetaiops-overview.png) |
+| 多租户用户 | Kubernetes 节点 |
+| ![XnetAIops 多租户用户](./docs/images/xnetaiops-users.png) | ![XnetAIops Kubernetes 节点](./docs/images/xnetaiops-k8s-nodes.png) |
+| Kubernetes 命名空间 | Kubernetes 工作负载 |
+| ![XnetAIops Kubernetes 命名空间](./docs/images/xnetaiops-k8s-namespaces.png) | ![XnetAIops Kubernetes 工作负载](./docs/images/xnetaiops-k8s-workloads.png) |
 
 ## 项目简介
 

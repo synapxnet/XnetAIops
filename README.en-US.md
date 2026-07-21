@@ -28,8 +28,10 @@
 | ![Kubernetes](./docs/images/xnetaiops-kubernetes.png) | ![Service orchestration](./docs/images/xnetaiops-service.png) |
 | Monitoring and alerts | Image registry |
 | ![Monitoring](./docs/images/xnetaiops-monitor.png) | ![Image registry](./docs/images/xnetaiops-registry.png) |
-| Multi-tenant users | 3D overview |
-| ![Users](./docs/images/xnetaiops-users.png) | ![3D overview](./docs/images/xnetaiops-overview.png) |
+| Multi-tenant users | Kubernetes nodes |
+| ![Users](./docs/images/xnetaiops-users.png) | ![Kubernetes nodes](./docs/images/xnetaiops-k8s-nodes.png) |
+| Kubernetes namespaces | Kubernetes workloads |
+| ![Kubernetes namespaces](./docs/images/xnetaiops-k8s-namespaces.png) | ![Kubernetes workloads](./docs/images/xnetaiops-k8s-workloads.png) |
 
 ## Overview
 
