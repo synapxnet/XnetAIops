@@ -1,5 +1,7 @@
 <div align="center">
 
+**简体中文** | [English](./README.en-US.md) | [日本語](./README.ja-JP.md)
+
 # XnetAIops
 
 **面向基础设施、服务与 Kubernetes 的智能运维平台**
@@ -113,6 +115,12 @@ mvn -DskipTests package
 cp .env.example .env
 docker compose up -d --build
 docker compose ps
+```
+
+公开展示数据位于 `sql/xnet_aiops_demo.sql`。脚本仅使用不可路由的演示地址和无效占位凭据，并通过 `demo-aiops-` 标记实现可重复执行，不会覆盖用户自行创建的数据。请在完成 `XnetAIops.sql` 初始化后执行：
+
+```bash
+mysql -h "${DB_HOST}" -u root -p XnetAIops < sql/xnet_aiops_demo.sql
 ```
 
 生产环境请使用独立的密钥、强密码和受限网络策略，不要沿用演示环境配置。
