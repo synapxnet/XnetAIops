@@ -228,7 +228,7 @@ INSERT INTO xnet_aiops_usr_user
   (uid, username, password, email, phone, user_type, status, last_login_at, created_at)
 VALUES
   ('demo-aiops-user-admin', 'demo_admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6CQARaY1.k0YGKISbVFnTUjXS',
-   'admin@demo.example', '12345678900', 'admin', 'active', NOW() - INTERVAL 5 MINUTE, NOW() - INTERVAL 120 DAY),
+   'admin@demo.example', '12345678910', 'admin', 'active', NOW() - INTERVAL 5 MINUTE, NOW() - INTERVAL 120 DAY),
   ('demo-aiops-user-operator', 'demo_operator', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6CQARaY1.k0YGKISbVFnTUjXS',
    'operator@demo.example', '12345678901', 'user', 'active', NOW() - INTERVAL 2 HOUR, NOW() - INTERVAL 96 DAY),
   ('demo-aiops-user-viewer', 'demo_viewer', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6CQARaY1.k0YGKISbVFnTUjXS',
