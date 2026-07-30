@@ -15,7 +15,7 @@
 
 </div>
 
-![XnetAIops 3D クラスター概要](./docs/images/xnetaiops-overview.png)
+![XnetAIops 3D クラスター概要](./docs/images/xnetaiops-overview-2026.png)
 
 ## 画面プレビュー
 
@@ -27,11 +27,11 @@
 | Kubernetes | サービス編成 |
 | ![Kubernetes](./docs/images/xnetaiops-kubernetes.png) | ![サービス編成](./docs/images/xnetaiops-service.png) |
 | 監視とアラート | イメージレジストリ |
-| ![監視](./docs/images/xnetaiops-monitor.png) | ![レジストリ](./docs/images/xnetaiops-registry.png) |
+| ![監視](./docs/images/xnetaiops-monitor-2026.png) | ![レジストリ](./docs/images/xnetaiops-registry.png) |
 | マルチテナントユーザー | Kubernetes ノード |
 | ![ユーザー](./docs/images/xnetaiops-users.png) | ![Kubernetes ノード](./docs/images/xnetaiops-k8s-nodes.png) |
 | Kubernetes 名前空間 | Kubernetes ワークロード |
-| ![Kubernetes 名前空間](./docs/images/xnetaiops-k8s-namespaces.png) | ![Kubernetes ワークロード](./docs/images/xnetaiops-k8s-workloads.png) |
+| ![Kubernetes 名前空間](./docs/images/xnetaiops-k8s-namespaces.png) | ![Kubernetes ワークロード](./docs/images/xnetaiops-workloads-2026.png) |
 
 ## 概要
 

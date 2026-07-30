@@ -15,7 +15,7 @@
 
 </div>
 
-![XnetAIops 3D cluster overview](./docs/images/xnetaiops-overview.png)
+![XnetAIops 3D cluster overview](./docs/images/xnetaiops-overview-2026.png)
 
 ## Product Tour
 
@@ -27,11 +27,11 @@
 | Kubernetes | Service orchestration |
 | ![Kubernetes](./docs/images/xnetaiops-kubernetes.png) | ![Service orchestration](./docs/images/xnetaiops-service.png) |
 | Monitoring and alerts | Image registry |
-| ![Monitoring](./docs/images/xnetaiops-monitor.png) | ![Image registry](./docs/images/xnetaiops-registry.png) |
+| ![Monitoring](./docs/images/xnetaiops-monitor-2026.png) | ![Image registry](./docs/images/xnetaiops-registry.png) |
 | Multi-tenant users | Kubernetes nodes |
 | ![Users](./docs/images/xnetaiops-users.png) | ![Kubernetes nodes](./docs/images/xnetaiops-k8s-nodes.png) |
 | Kubernetes namespaces | Kubernetes workloads |
-| ![Kubernetes namespaces](./docs/images/xnetaiops-k8s-namespaces.png) | ![Kubernetes workloads](./docs/images/xnetaiops-k8s-workloads.png) |
+| ![Kubernetes namespaces](./docs/images/xnetaiops-k8s-namespaces.png) | ![Kubernetes workloads](./docs/images/xnetaiops-workloads-2026.png) |
 
 ## Overview
 
