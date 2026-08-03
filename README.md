@@ -39,6 +39,12 @@ XnetAIops 是由 **SynapXnet 团队**开源的智能运维平台，面向服务�
 
 本仓库是平台后端，与 [XnetAIops-web](https://github.com/synapxnet/XnetAIops-web) 前端仓库共同组成企业级、多租户、前后端分离系统。项目采用模块化微服务架构，将集群生命周期、主机资产、服务编排、可观测性、租户权限控制等能力拆分为独立服务，便于按场景组合、扩展和二次开发。
 
+## GOAI Competition 1.0.0
+
+`GOAI-Competition` 分支新增面向 OpenXnet Agent 的只读运维证据接口：告警事实、Kubernetes 工作负载和服务健康度共享 `ToolResponse 1.0.0`、Workspace/Incident/Trace 上下文及短期单工具委托令牌。固定演示 Fixture 还原 v18 上线后错误率从 0.8% 升至 18%、P95 达到 2.6 秒的可复现场景，不在业务代码中按 UID 伪造结果。
+
+[查看交接、Fixture、调用样例和验证记录](./docs/goai-handoff/HANDOFF-GOAI-COMPETITION-1.0.0.md) · [配套事件证据页](https://github.com/synapxnet/XnetAIops-web/tree/GOAI-Competition)
+
 ## 项目优势
 
 - **企业多租户**：通过用户、角色、权限与资源边界服务不同组织和团队。

@@ -11,6 +11,14 @@ public interface AlertHistoryService {
 
     AlertHistory getById(Long id);
 
+    /**
+     * 根据稳定 UID 获取告警记录。
+     *
+     * @param uid 告警稳定 UID
+     * @return 告警领域记录
+     */
+    AlertHistory getByUid(String uid);
+
     AlertHistory create(AlertHistory alertHistory);
 
     AlertHistory acknowledge(Long id);

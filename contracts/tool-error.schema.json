@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openxnet.local/agent/v1/tool-error.schema.json",
+  "title": "OpenXnet Agent Tool Error",
+  "description": "工具失败时返回的结构化错误。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["code", "message", "retryable"],
+  "properties": {
+    "code": {
+      "type": "string",
+      "enum": [
+        "INVALID_ARGUMENT",
+        "UNAUTHENTICATED",
+        "PERMISSION_DENIED",
+        "APPROVAL_REQUIRED",
+        "APPROVAL_INVALID",
+        "RESOURCE_NOT_FOUND",
+        "RESOURCE_VERSION_CONFLICT",
+        "IDEMPOTENCY_CONFLICT",
+        "PRECONDITION_FAILED",
+        "RATE_LIMITED",
+        "UPSTREAM_UNAVAILABLE",
+        "TOOL_TIMEOUT",
+        "INTERNAL_ERROR"
+      ]
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "retryable": {
+      "type": "boolean"
+    },
+    "details": {
+      "type": "object"
+    }
+  }
+}

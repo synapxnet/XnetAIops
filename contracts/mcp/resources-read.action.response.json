@@ -1,0 +1,22 @@
+{
+  "jsonrpc": "2.0",
+  "id": "action-read-1",
+  "result": {
+    "resultType": "complete",
+    "contents": [
+      {
+        "uri": "openxnet://workspaces/ws_goai_demo/actions/action_rollback_001",
+        "mimeType": "application/json",
+        "text": "{\"actionId\":\"action_rollback_001\",\"status\":\"RUNNING\",\"stage\":\"VERIFYING\",\"fromRevision\":18,\"targetRevision\":17,\"updatedAt\":\"2026-08-03T02:00:08Z\"}"
+      }
+    ],
+    "ttlMs": 0,
+    "cacheScope": "private",
+    "_meta": {
+      "io.modelcontextprotocol/serverInfo": {
+        "name": "openxnet-mcp-gateway",
+        "version": "1.0.0"
+      }
+    }
+  }
+}

@@ -37,6 +37,21 @@ public class AlertHistoryServiceImpl implements AlertHistoryService {
         return alert;
     }
 
+    /**
+     * 根据稳定 UID 获取告警记录，避免在 Controller 中遍历告警列表。
+     *
+     * @param uid 告警稳定 UID
+     * @return 告警领域记录
+     */
+    @Override
+    public AlertHistory getByUid(String uid) {
+        AlertHistory alert = alertHistoryMapper.findByUid(uid);
+        if (alert == null) {
+            throw new IllegalArgumentException("Alert not found: " + uid);
+        }
+        return alert;
+    }
+
     @Override
     public AlertHistory create(AlertHistory alertHistory) {
         alertHistory.setUid(UUID.randomUUID().toString());

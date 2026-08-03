@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openxnet.local/agent/v1/tool-request.schema.json",
+  "title": "OpenXnet Agent Tool Request",
+  "description": "三平台 Agent 工具的统一请求包络。传输上下文由 HTTP 请求头提供。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["requestId", "toolName", "arguments", "dryRun"],
+  "properties": {
+    "requestId": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128
+    },
+    "toolName": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(\\.[a-z][a-z0-9]*){2,}$",
+      "maxLength": 128
+    },
+    "arguments": {
+      "type": "object"
+    },
+    "approvalId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "expectedResourceVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 1000
+    },
+    "dryRun": {
+      "type": "boolean"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "toolName": { "const": "mlops.deployment.rollback" }
+        },
+        "required": ["toolName"]
+      },
+      "then": {
+        "required": [
+          "approvalId",
+          "expectedResourceVersion",
+          "reason"
+        ]
+      }
+    }
+  ]
+}

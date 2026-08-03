@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openxnet.local/agent/v1/tool-manifest.schema.json",
+  "title": "OpenXnet Agent Tool Manifest",
+  "description": "企业空间可导入的工具登记清单。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["manifestVersion", "contractVersion", "tools"],
+  "properties": {
+    "manifestVersion": { "type": "string", "const": "1.0.0" },
+    "contractVersion": { "type": "string", "const": "1.0.0" },
+    "tools": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "title",
+          "owner",
+          "riskLevel",
+          "method",
+          "path",
+          "timeoutMs",
+          "requiresApproval",
+          "arguments"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(\\.[a-z][a-z0-9]*){2,}$"
+          },
+          "title": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "description": { "type": "string", "minLength": 1, "maxLength": 500 },
+          "owner": { "type": "string", "enum": ["XnetAIops", "XnetDataops", "XnetMLops"] },
+          "service": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "riskLevel": {
+            "type": "string",
+            "enum": ["READ", "COSTLY_READ", "LOW_RISK_WRITE", "HIGH_RISK_WRITE"]
+          },
+          "method": { "type": "string", "const": "POST" },
+          "path": { "type": "string", "pattern": "^/api/agent/v1/tools/.+:invoke$" },
+          "timeoutMs": { "type": "integer", "minimum": 100, "maximum": 600000 },
+          "requiresApproval": { "type": "boolean" },
+          "arguments": {
+            "type": "object",
+            "required": ["type"],
+            "properties": {
+              "type": { "const": "object" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

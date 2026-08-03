@@ -39,6 +39,12 @@ XnetAIops is an open-source operations platform maintained by the **SynapXnet te
 
 This repository contains the backend. Together with [XnetAIops-web](https://github.com/synapxnet/XnetAIops-web), it forms an enterprise-grade, multi-tenant, frontend/backend-separated system. Its modular microservices can be adopted as a complete platform or integrated by domain.
 
+## GOAI Competition 1.0.0
+
+The `GOAI-Competition` branch adds read-only Agent evidence tools for alerts, Kubernetes workloads, and service health. Every call uses the shared `ToolResponse 1.0.0` envelope, Workspace/Incident/Trace context, and a short-lived single-tool delegation token. The versioned fixture reproduces the v18 degradation without UID-specific branches in application code.
+
+[Handoff, fixture, API examples, and verification](./docs/goai-handoff/HANDOFF-GOAI-COMPETITION-1.0.0.md) · [Companion evidence UI](https://github.com/synapxnet/XnetAIops-web/tree/GOAI-Competition)
+
 ## Why XnetAIops
 
 - **Enterprise multi-tenancy:** users, roles, teams, and resource boundaries for multiple organizations.

@@ -45,6 +45,21 @@ public class ServiceInstanceServiceImpl implements ServiceInstanceService {
         return instance;
     }
 
+    /**
+     * 根据稳定 UID 获取服务实例，供 Agent 健康证据工具使用。
+     *
+     * @param uid 服务实例 UID
+     * @return 服务领域记录
+     */
+    @Override
+    public ServiceInstance getByUid(String uid) {
+        ServiceInstance instance = serviceInstanceMapper.findByUid(uid);
+        if (instance == null) {
+            throw new IllegalArgumentException("Service instance not found: " + uid);
+        }
+        return instance;
+    }
+
     @Override
     public Map<String, Object> getDetail(Long id) {
         ServiceInstance instance = getById(id);

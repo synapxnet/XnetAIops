@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openxnet.local/agent/v1/tool-response.schema.json",
+  "title": "OpenXnet Agent Tool Response",
+  "description": "三平台 Agent 工具的统一响应包络。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["success", "data", "error", "meta", "auditReceipt"],
+  "properties": {
+    "success": { "type": "boolean" },
+    "data": { "type": ["object", "array", "string", "number", "boolean", "null"] },
+    "error": {
+      "anyOf": [
+        { "$ref": "tool-error.schema.json" },
+        { "type": "null" }
+      ]
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "workspaceId",
+        "incidentId",
+        "traceId",
+        "toolName",
+        "contractVersion",
+        "observedAt",
+        "durationMs",
+        "source"
+      ],
+      "properties": {
+        "requestId": { "type": "string", "minLength": 8, "maxLength": 128 },
+        "workspaceId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "incidentId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "traceId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "toolName": { "type": "string", "minLength": 3, "maxLength": 128 },
+        "contractVersion": { "type": "string", "const": "1.0.0" },
+        "observedAt": { "type": "string", "format": "date-time" },
+        "durationMs": { "type": "integer", "minimum": 0 },
+        "source": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "evidenceId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "resourceVersion": { "type": "string", "minLength": 1, "maxLength": 128 }
+      }
+    },
+    "auditReceipt": {
+      "anyOf": [
+        { "$ref": "audit-receipt.schema.json" },
+        { "type": "null" }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "success": { "const": true } } },
+      "then": {
+        "properties": { "error": { "type": "null" } }
+      },
+      "else": {
+        "properties": {
+          "data": { "type": "null" },
+          "error": { "$ref": "tool-error.schema.json" }
+        }
+      }
+    }
+  ]
+}

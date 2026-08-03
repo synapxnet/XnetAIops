@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.synapxnet</groupId>
         <artifactId>aiops-parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
 
     <artifactId>aiops-k8s-service</artifactId>
@@ -15,6 +15,11 @@
     <description>Kubernetes Management Service</description>
 
     <dependencies>
+        <dependency>
+            <groupId>com.synapxnet</groupId>
+            <artifactId>aiops-agent-contract</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>

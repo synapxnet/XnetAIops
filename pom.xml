@@ -6,12 +6,13 @@
 
     <groupId>com.synapxnet</groupId>
     <artifactId>aiops-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
     <name>AIOps Parent</name>
     <description>Parent POM for XnetAIops intelligent operations platform</description>
 
     <modules>
+        <module>aiops-agent-contract</module>
         <module>aiops-clm-service</module>
         <module>aiops-hom-service</module>
         <module>aiops-svm-service</module>

@@ -1,0 +1,34 @@
+{
+  "jsonrpc": "2.0",
+  "id": "rollback-1",
+  "method": "tools/call",
+  "params": {
+    "name": "mlops.deployment.rollback",
+    "arguments": {
+      "deploymentUid": "deploy_risk_prod",
+      "targetRevision": 17,
+      "verificationPolicy": {
+        "maxErrorRate": 0.02,
+        "maxP95Ms": 500
+      },
+      "governance": {
+        "approvalId": "apr_goai_001",
+        "expectedResourceVersion": "42",
+        "reason": "v18 输入维度与生产特征不一致，回滚至已验证的 v17",
+        "dryRun": false,
+        "idempotencyKey": "idem_goai_rollback_001"
+      }
+    },
+    "_meta": {
+      "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+      "io.modelcontextprotocol/clientInfo": {
+        "name": "openxnet-desktop",
+        "version": "1.0.0"
+      },
+      "io.modelcontextprotocol/clientCapabilities": {},
+      "traceparent": "00-0af7651916cd43dd8448eb211c80319c-00f067aa0ba902b7-01",
+      "com.synapxnet/incidentId": "inc_model_contract_001",
+      "com.synapxnet/traceId": "trace_model_contract_001"
+    }
+  }
+}

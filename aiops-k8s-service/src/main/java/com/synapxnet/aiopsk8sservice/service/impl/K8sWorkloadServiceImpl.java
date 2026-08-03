@@ -59,6 +59,9 @@ public class K8sWorkloadServiceImpl implements K8sWorkloadService {
         // Add labels & selectors
         map.put("labels", deploy.getMetadata().getLabels());
         map.put("annotations", deploy.getMetadata().getAnnotations());
+        map.put("resourceVersion", deploy.getMetadata().getResourceVersion());
+        map.put("currentRevision", deploy.getMetadata().getAnnotations() == null ? null
+                : deploy.getMetadata().getAnnotations().get("deployment.kubernetes.io/revision"));
         if (deploy.getSpec().getSelector() != null) {
             map.put("selector", deploy.getSpec().getSelector().getMatchLabels());
         }
@@ -66,6 +69,15 @@ public class K8sWorkloadServiceImpl implements K8sWorkloadService {
         // Strategy
         if (deploy.getSpec().getStrategy() != null) {
             map.put("strategy", deploy.getSpec().getStrategy().getType());
+        }
+        if (deploy.getStatus() != null && deploy.getStatus().getConditions() != null) {
+            map.put("conditions", deploy.getStatus().getConditions().stream().map(condition -> Map.of(
+                    "type", valueOrEmpty(condition.getType()),
+                    "status", valueOrEmpty(condition.getStatus()),
+                    "reason", valueOrEmpty(condition.getReason()),
+                    "message", valueOrEmpty(condition.getMessage()),
+                    "lastTransitionTime", valueOrEmpty(condition.getLastTransitionTime())
+            )).toList());
         }
 
         // YAML representation
@@ -220,6 +232,20 @@ public class K8sWorkloadServiceImpl implements K8sWorkloadService {
         }
         map.put("labels", sts.getMetadata().getLabels());
         map.put("annotations", sts.getMetadata().getAnnotations());
+        map.put("resourceVersion", sts.getMetadata().getResourceVersion());
+        map.put("currentRevision", sts.getStatus() == null ? null : sts.getStatus().getCurrentRevision());
+        if (sts.getSpec().getSelector() != null) {
+            map.put("selector", sts.getSpec().getSelector().getMatchLabels());
+        }
+        if (sts.getStatus() != null && sts.getStatus().getConditions() != null) {
+            map.put("conditions", sts.getStatus().getConditions().stream().map(condition -> Map.of(
+                    "type", valueOrEmpty(condition.getType()),
+                    "status", valueOrEmpty(condition.getStatus()),
+                    "reason", valueOrEmpty(condition.getReason()),
+                    "message", valueOrEmpty(condition.getMessage()),
+                    "lastTransitionTime", valueOrEmpty(condition.getLastTransitionTime())
+            )).toList());
+        }
         map.put("yaml", Serialization.asYaml(sts));
 
         return map;
@@ -292,6 +318,20 @@ public class K8sWorkloadServiceImpl implements K8sWorkloadService {
         }
         map.put("labels", ds.getMetadata().getLabels());
         map.put("annotations", ds.getMetadata().getAnnotations());
+        map.put("resourceVersion", ds.getMetadata().getResourceVersion());
+        map.put("currentRevision", ds.getMetadata().getGeneration());
+        if (ds.getSpec().getSelector() != null) {
+            map.put("selector", ds.getSpec().getSelector().getMatchLabels());
+        }
+        if (ds.getStatus() != null && ds.getStatus().getConditions() != null) {
+            map.put("conditions", ds.getStatus().getConditions().stream().map(condition -> Map.of(
+                    "type", valueOrEmpty(condition.getType()),
+                    "status", valueOrEmpty(condition.getStatus()),
+                    "reason", valueOrEmpty(condition.getReason()),
+                    "message", valueOrEmpty(condition.getMessage()),
+                    "lastTransitionTime", valueOrEmpty(condition.getLastTransitionTime())
+            )).toList());
+        }
         map.put("yaml", Serialization.asYaml(ds));
 
         return map;
@@ -468,5 +508,15 @@ public class K8sWorkloadServiceImpl implements K8sWorkloadService {
         }
 
         return map;
+    }
+
+    /**
+     * 将可能为空的 Kubernetes 条件字段转换为空字符串，供不可变 Map 安全承载。
+     *
+     * @param value Kubernetes 条件字段
+     * @return 非 null 字符串
+     */
+    private String valueOrEmpty(String value) {
+        return value == null ? "" : value;
     }
 }

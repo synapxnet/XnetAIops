@@ -1,0 +1,273 @@
+{
+  "jsonrpc": "2.0",
+  "id": "tools-list-1",
+  "result": {
+    "resultType": "complete",
+    "tools": [
+      {
+        "name": "aiops.alert.get",
+        "title": "获取 AIOps 告警证据",
+        "description": "按告警 ID 或 UID 获取告警事实、阈值和关联资源。该工具只读。",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "required": [
+                "alertId"
+              ]
+            },
+            {
+              "required": [
+                "alertUid"
+              ]
+            }
+          ],
+          "properties": {
+            "alertId": {
+              "type": "string"
+            },
+            "alertUid": {
+              "type": "string"
+            }
+          }
+        },
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "success",
+            "data",
+            "error",
+            "meta",
+            "auditReceipt"
+          ],
+          "properties": {
+            "success": {
+              "type": "boolean"
+            },
+            "data": {},
+            "error": {
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "meta": {
+              "type": "object"
+            },
+            "auditReceipt": {
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          }
+        },
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      },
+      {
+        "name": "dataops.schema.snapshot.get",
+        "title": "获取 DataOps Schema 快照",
+        "description": "获取数据资产指定版本或时间点的字段结构和 Schema 摘要。该工具只读。",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "assetUid"
+          ],
+          "properties": {
+            "assetUid": {
+              "type": "string"
+            },
+            "schemaVersion": {
+              "type": "string"
+            },
+            "observedAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "not": {
+            "required": [
+              "schemaVersion",
+              "observedAt"
+            ]
+          }
+        },
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "success",
+            "data",
+            "error",
+            "meta",
+            "auditReceipt"
+          ],
+          "properties": {
+            "success": {
+              "type": "boolean"
+            },
+            "data": {},
+            "error": {
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "meta": {
+              "type": "object"
+            },
+            "auditReceipt": {
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          }
+        },
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      },
+      {
+        "name": "mlops.deployment.rollback",
+        "title": "回滚 MLOps 模型部署",
+        "description": "在审批、幂等和资源版本校验通过后，将模型部署回滚到指定修订。该工具会修改运行环境。",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "deploymentUid",
+            "targetRevision",
+            "verificationPolicy",
+            "governance"
+          ],
+          "properties": {
+            "deploymentUid": {
+              "type": "string"
+            },
+            "targetRevision": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "verificationPolicy": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "maxErrorRate",
+                "maxP95Ms"
+              ],
+              "properties": {
+                "maxErrorRate": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "maxP95Ms": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "governance": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "approvalId",
+                "expectedResourceVersion",
+                "reason",
+                "dryRun",
+                "idempotencyKey"
+              ],
+              "properties": {
+                "approvalId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "expectedResourceVersion": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "reason": {
+                  "type": "string",
+                  "minLength": 4,
+                  "maxLength": 1000
+                },
+                "dryRun": {
+                  "type": "boolean"
+                },
+                "idempotencyKey": {
+                  "type": "string",
+                  "minLength": 8,
+                  "maxLength": 128
+                }
+              }
+            }
+          }
+        },
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "success",
+            "data",
+            "error",
+            "meta",
+            "auditReceipt"
+          ],
+          "properties": {
+            "success": {
+              "type": "boolean"
+            },
+            "data": {},
+            "error": {
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "meta": {
+              "type": "object"
+            },
+            "auditReceipt": {
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          }
+        },
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true
+        }
+      }
+    ],
+    "ttlMs": 60000,
+    "cacheScope": "private",
+    "_meta": {
+      "io.modelcontextprotocol/serverInfo": {
+        "name": "openxnet-mcp-gateway",
+        "version": "1.0.0"
+      }
+    }
+  }
+}

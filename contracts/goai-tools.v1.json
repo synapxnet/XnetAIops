@@ -1,0 +1,237 @@
+{
+  "manifestVersion": "1.0.0",
+  "contractVersion": "1.0.0",
+  "tools": [
+    {
+      "name": "aiops.alert.get",
+      "title": "获取 AIOps 告警证据",
+      "description": "按告警 ID 或 UID 获取监控告警及其关联资源证据。",
+      "owner": "XnetAIops",
+      "service": "aiops-mon-service",
+      "riskLevel": "READ",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/aiops.alert.get:invoke",
+      "timeoutMs": 3000,
+      "requiresApproval": false,
+      "arguments": {
+        "type": "object",
+        "oneOf": [
+          { "required": ["alertId"] },
+          { "required": ["alertUid"] }
+        ],
+        "properties": {
+          "alertId": { "type": "string" },
+          "alertUid": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "aiops.service.health",
+      "title": "获取 AIOps 服务健康证据",
+      "description": "获取服务及角色实例的健康汇总。",
+      "owner": "XnetAIops",
+      "service": "aiops-svm-service",
+      "riskLevel": "READ",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/aiops.service.health:invoke",
+      "timeoutMs": 5000,
+      "requiresApproval": false,
+      "arguments": {
+        "type": "object",
+        "required": ["serviceUid"],
+        "properties": {
+          "serviceUid": { "type": "string" },
+          "windowMinutes": { "type": "integer", "minimum": 1, "maximum": 1440 }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "aiops.k8s.workload.get",
+      "title": "获取 Kubernetes 工作负载证据",
+      "description": "获取 Kubernetes 工作负载、修订、Pod、事件和指标摘要。",
+      "owner": "XnetAIops",
+      "service": "aiops-k8s-service",
+      "riskLevel": "READ",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/aiops.k8s.workload.get:invoke",
+      "timeoutMs": 8000,
+      "requiresApproval": false,
+      "arguments": {
+        "type": "object",
+        "required": ["clusterId", "namespace", "kind", "name"],
+        "properties": {
+          "clusterId": { "type": "string" },
+          "namespace": { "type": "string" },
+          "kind": { "type": "string", "enum": ["Deployment", "StatefulSet", "DaemonSet"] },
+          "name": { "type": "string" },
+          "windowMinutes": { "type": "integer", "minimum": 1, "maximum": 1440 }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dataops.quality.report.get",
+      "title": "获取 DataOps 质量报告",
+      "description": "获取数据质量报告及规则结果。",
+      "owner": "XnetDataops",
+      "service": "dataops-dqm-service",
+      "riskLevel": "READ",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/dataops.quality.report.get:invoke",
+      "timeoutMs": 5000,
+      "requiresApproval": false,
+      "arguments": {
+        "type": "object",
+        "required": ["reportUid"],
+        "properties": {
+          "reportUid": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dataops.schema.snapshot.get",
+      "title": "获取 DataOps Schema 快照",
+      "description": "获取数据资产在指定时间或版本的 Schema 快照。",
+      "owner": "XnetDataops",
+      "service": "dataops-dgv-service",
+      "riskLevel": "READ",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/dataops.schema.snapshot.get:invoke",
+      "timeoutMs": 5000,
+      "requiresApproval": false,
+      "arguments": {
+        "type": "object",
+        "required": ["assetUid"],
+        "properties": {
+          "assetUid": { "type": "string" },
+          "schemaVersion": { "type": "string" },
+          "observedAt": { "type": "string", "format": "date-time" }
+        },
+        "not": {
+          "required": ["schemaVersion", "observedAt"]
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dataops.lineage.get",
+      "title": "获取 DataOps 血缘",
+      "description": "获取资产上下游血缘和关联任务。",
+      "owner": "XnetDataops",
+      "service": "dataops-dgv-service",
+      "riskLevel": "READ",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/dataops.lineage.get:invoke",
+      "timeoutMs": 8000,
+      "requiresApproval": false,
+      "arguments": {
+        "type": "object",
+        "required": ["assetUid", "direction", "depth"],
+        "properties": {
+          "assetUid": { "type": "string" },
+          "direction": { "type": "string", "enum": ["UPSTREAM", "DOWNSTREAM", "BOTH"] },
+          "depth": { "type": "integer", "minimum": 1, "maximum": 5 }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dataops.workflow.instance.get",
+      "title": "获取 DataOps 工作流实例",
+      "description": "获取调度实例、节点状态和脱敏日志摘要。",
+      "owner": "XnetDataops",
+      "service": "dataops-tsk-service",
+      "riskLevel": "READ",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/dataops.workflow.instance.get:invoke",
+      "timeoutMs": 5000,
+      "requiresApproval": false,
+      "arguments": {
+        "type": "object",
+        "required": ["instanceUid"],
+        "properties": {
+          "instanceUid": { "type": "string" },
+          "includeLogSummary": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "mlops.deployment.get",
+      "title": "获取 MLOps 部署证据",
+      "description": "获取模型部署、修订和输入契约证据。",
+      "owner": "XnetMLops",
+      "service": "mlops-mep-service",
+      "riskLevel": "READ",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/mlops.deployment.get:invoke",
+      "timeoutMs": 5000,
+      "requiresApproval": false,
+      "arguments": {
+        "type": "object",
+        "required": ["deploymentUid"],
+        "properties": {
+          "deploymentUid": { "type": "string" },
+          "includeRevisions": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "mlops.inference.probe",
+      "title": "执行 MLOps 推理探针",
+      "description": "对部署执行受控推理探针并校验输入契约。",
+      "owner": "XnetMLops",
+      "service": "mlops-mep-service",
+      "riskLevel": "COSTLY_READ",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/mlops.inference.probe:invoke",
+      "timeoutMs": 60000,
+      "requiresApproval": false,
+      "arguments": {
+        "type": "object",
+        "required": ["deploymentUid", "testDatasetRef", "sampleLimit"],
+        "properties": {
+          "deploymentUid": { "type": "string" },
+          "testDatasetRef": { "type": "string" },
+          "sampleLimit": { "type": "integer", "minimum": 1, "maximum": 1000 },
+          "timeoutMs": { "type": "integer", "minimum": 100, "maximum": 60000 }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "mlops.deployment.rollback",
+      "title": "回滚 MLOps 模型部署",
+      "description": "在审批、幂等和资源版本校验后将模型部署回滚到指定修订。",
+      "owner": "XnetMLops",
+      "service": "mlops-mep-service",
+      "riskLevel": "HIGH_RISK_WRITE",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/mlops.deployment.rollback:invoke",
+      "timeoutMs": 10000,
+      "requiresApproval": true,
+      "arguments": {
+        "type": "object",
+        "required": ["deploymentUid", "targetRevision", "verificationPolicy"],
+        "properties": {
+          "deploymentUid": { "type": "string" },
+          "targetRevision": { "type": "integer", "minimum": 1 },
+          "verificationPolicy": {
+            "type": "object",
+            "required": ["maxErrorRate", "maxP95Ms"],
+            "properties": {
+              "maxErrorRate": { "type": "number", "minimum": 0, "maximum": 1 },
+              "maxP95Ms": { "type": "integer", "minimum": 1 }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  ]
+}

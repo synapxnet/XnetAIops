@@ -39,6 +39,12 @@ XnetAIops は **SynapXnet チーム**が開発・公開する運用管理プラ�
 
 本リポジトリはバックエンドです。[XnetAIops-web](https://github.com/synapxnet/XnetAIops-web) と組み合わせることで、企業向けのマルチテナント、フロントエンド・バックエンド分離システムを構成します。
 
+## GOAI Competition 1.0.0
+
+`GOAI-Competition` ブランチは、アラート、Kubernetes ワークロード、サービス正常性を取得する読み取り専用 Agent ツールを追加します。すべての呼び出しは共通の `ToolResponse 1.0.0`、Workspace/Incident/Trace コンテキスト、短期かつ単一ツール限定の委任トークンを使用します。
+
+[引き継ぎ、Fixture、API 例、検証結果](./docs/goai-handoff/HANDOFF-GOAI-COMPETITION-1.0.0.md) · [対応する証拠 UI](https://github.com/synapxnet/XnetAIops-web/tree/GOAI-Competition)
+
 ## 特長
 
 - **企業向けマルチテナント:** ユーザー、ロール、チーム、リソース境界を統合管理。

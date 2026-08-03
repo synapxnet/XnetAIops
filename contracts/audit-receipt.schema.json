@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openxnet.local/agent/v1/audit-receipt.schema.json",
+  "title": "OpenXnet Agent Audit Receipt",
+  "description": "工具调用产生的可追溯审计回执，写工具必须返回。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "receiptId",
+    "requestId",
+    "workspaceId",
+    "incidentId",
+    "traceId",
+    "toolName",
+    "actorId",
+    "riskLevel",
+    "requestDigest",
+    "status",
+    "startedAt"
+  ],
+  "properties": {
+    "receiptId": { "type": "string", "minLength": 8, "maxLength": 128 },
+    "requestId": { "type": "string", "minLength": 8, "maxLength": 128 },
+    "workspaceId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "incidentId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "traceId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "toolName": { "type": "string", "minLength": 3, "maxLength": 128 },
+    "actorId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "approvalId": { "type": ["string", "null"], "maxLength": 128 },
+    "idempotencyKey": { "type": ["string", "null"], "maxLength": 128 },
+    "riskLevel": {
+      "type": "string",
+      "enum": ["READ", "COSTLY_READ", "LOW_RISK_WRITE", "HIGH_RISK_WRITE"]
+    },
+    "requestDigest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["PENDING", "RUNNING", "SUCCEEDED", "FAILED", "REJECTED", "CANCELLED"]
+    },
+    "targetResource": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "type": "string", "maxLength": 128 },
+        "uid": { "type": "string", "maxLength": 256 },
+        "beforeVersion": { "type": ["string", "null"], "maxLength": 128 },
+        "afterVersion": { "type": ["string", "null"], "maxLength": 128 }
+      },
+      "required": ["type", "uid"]
+    },
+    "evidenceIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1, "maxLength": 128 }
+    },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "completedAt": { "type": ["string", "null"], "format": "date-time" },
+    "resultDigest": {
+      "type": ["string", "null"],
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

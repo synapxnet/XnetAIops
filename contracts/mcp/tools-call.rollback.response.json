@@ -1,0 +1,76 @@
+{
+  "jsonrpc": "2.0",
+  "id": "rollback-1",
+  "result": {
+    "resultType": "complete",
+    "content": [
+      {
+        "type": "text",
+        "text": "回滚动作已受理，当前状态为 PENDING；动作编号 action_rollback_001。"
+      },
+      {
+        "type": "resource_link",
+        "uri": "openxnet://workspaces/ws_goai_demo/actions/action_rollback_001",
+        "name": "回滚动作状态",
+        "description": "读取回滚阶段、最终状态和验证结果。",
+        "mimeType": "application/json"
+      }
+    ],
+    "structuredContent": {
+      "success": true,
+      "data": {
+        "actionId": "action_rollback_001",
+        "status": "PENDING",
+        "actionResourceUri": "openxnet://workspaces/ws_goai_demo/actions/action_rollback_001"
+      },
+      "error": null,
+      "meta": {
+        "requestId": "req_rollback_001",
+        "workspaceId": "ws_goai_demo",
+        "incidentId": "inc_model_contract_001",
+        "traceId": "trace_model_contract_001",
+        "toolName": "mlops.deployment.rollback",
+        "contractVersion": "1.0.0",
+        "observedAt": "2026-08-03T02:00:00Z",
+        "durationMs": 136,
+        "source": "XnetMLops/mep",
+        "resourceVersion": "42"
+      },
+      "auditReceipt": {
+        "receiptId": "receipt_rollback_001",
+        "requestId": "req_rollback_001",
+        "workspaceId": "ws_goai_demo",
+        "incidentId": "inc_model_contract_001",
+        "traceId": "trace_model_contract_001",
+        "toolName": "mlops.deployment.rollback",
+        "actorId": "user_operator_001",
+        "approvalId": "apr_goai_001",
+        "idempotencyKey": "idem_goai_rollback_001",
+        "riskLevel": "HIGH_RISK_WRITE",
+        "requestDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "status": "PENDING",
+        "targetResource": {
+          "type": "MODEL_DEPLOYMENT",
+          "uid": "deploy_risk_prod",
+          "beforeVersion": "42",
+          "afterVersion": null
+        },
+        "evidenceIds": [
+          "ev_aiops_001",
+          "ev_dataops_001",
+          "ev_mlops_001"
+        ],
+        "startedAt": "2026-08-03T02:00:00Z",
+        "completedAt": null,
+        "resultDigest": null
+      }
+    },
+    "isError": false,
+    "_meta": {
+      "io.modelcontextprotocol/serverInfo": {
+        "name": "openxnet-mcp-gateway",
+        "version": "1.0.0"
+      }
+    }
+  }
+}

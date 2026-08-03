@@ -20,6 +20,15 @@ public interface AlertHistoryMapper {
     @Select("SELECT * FROM xnet_aiops_mon_alert_history WHERE id = #{id}")
     AlertHistory findById(@Param("id") Long id);
 
+    /**
+     * 根据稳定 UID 获取告警记录，供 Agent 证据工具直接定位领域事实。
+     *
+     * @param uid 告警稳定 UID
+     * @return 告警记录，不存在时返回 null
+     */
+    @Select("SELECT * FROM xnet_aiops_mon_alert_history WHERE uid = #{uid}")
+    AlertHistory findByUid(@Param("uid") String uid);
+
     @Insert("INSERT INTO xnet_aiops_mon_alert_history (uid, cluster_id, alert_rule_id, alert_name, hostname, " +
             "alert_level, alert_info, alert_advice, status) " +
             "VALUES (#{uid}, #{clusterId}, #{alertRuleId}, #{alertName}, #{hostname}, " +

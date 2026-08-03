@@ -20,6 +20,15 @@ public interface ServiceInstanceMapper {
     @Select("SELECT * FROM xnet_aiops_svm_service_instance WHERE id = #{id}")
     ServiceInstance findById(@Param("id") Long id);
 
+    /**
+     * 根据稳定 UID 获取服务实例。
+     *
+     * @param uid 服务实例 UID
+     * @return 服务实例，不存在时返回 null
+     */
+    @Select("SELECT * FROM xnet_aiops_svm_service_instance WHERE uid = #{uid}")
+    ServiceInstance findByUid(@Param("uid") String uid);
+
     @Insert("INSERT INTO xnet_aiops_svm_service_instance (uid, cluster_id, service_def_id, service_name, status, config_json) " +
             "VALUES (#{uid}, #{clusterId}, #{serviceDefId}, #{serviceName}, #{status}, #{configJson})")
     @Options(useGeneratedKeys = true, keyProperty = "id")

@@ -1,0 +1,25 @@
+{
+  "jsonrpc": "2.0",
+  "id": "discover-1",
+  "result": {
+    "resultType": "complete",
+    "supportedVersions": [
+      "2026-07-28"
+    ],
+    "capabilities": {
+      "tools": {
+        "listChanged": false
+      },
+      "resources": {}
+    },
+    "_meta": {
+      "io.modelcontextprotocol/serverInfo": {
+        "name": "openxnet-mcp-gateway",
+        "version": "1.0.0"
+      }
+    },
+    "instructions": "在当前企业空间权限内读取 AIOps、DataOps、MLOps 证据；高风险写操作必须使用有效审批。",
+    "ttlMs": 60000,
+    "cacheScope": "private"
+  }
+}
