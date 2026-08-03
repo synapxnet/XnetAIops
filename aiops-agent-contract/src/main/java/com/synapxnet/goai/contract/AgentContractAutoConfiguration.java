@@ -1,5 +1,6 @@
 package com.synapxnet.goai.contract;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -29,13 +30,15 @@ public class AgentContractAutoConfiguration {
      * 注册只作用于 Agent v1 API 的上下文过滤器。
      *
      * @param verifier 委托令牌验证器
+     * @param objectMapper Spring 统一配置的 JSON 序列化器
      * @return Servlet 过滤器注册对象
      */
     @Bean
     FilterRegistrationBean<AgentRequestContextFilter> agentRequestContextFilter(
-            DelegatedTokenVerifier verifier) {
+            DelegatedTokenVerifier verifier,
+            ObjectMapper objectMapper) {
         FilterRegistrationBean<AgentRequestContextFilter> bean = new FilterRegistrationBean<>();
-        bean.setFilter(new AgentRequestContextFilter(verifier));
+        bean.setFilter(new AgentRequestContextFilter(verifier, objectMapper));
         bean.addUrlPatterns("/api/agent/v1/*");
         bean.setOrder(-100);
         return bean;

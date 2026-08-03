@@ -1,6 +1,8 @@
 package com.synapxnet.goai.contract;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -11,6 +13,7 @@ import java.time.Instant;
  * 将预期契约异常转换为公共错误包络，并避免向客户端泄露堆栈和凭据。
  */
 @RestControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
 final class AgentExceptionHandler {
 
     /**
