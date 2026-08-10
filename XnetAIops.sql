@@ -322,6 +322,46 @@ CREATE TABLE xnet_aiops_usr_user_role_cluster (
   UNIQUE KEY uk_user_role_cluster (user_id, role_id, cluster_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户-角色-集群映射表';
 
+CREATE TABLE xnet_aiops_sys_tenant (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  uid VARCHAR(50) NOT NULL UNIQUE,
+  tenant_name VARCHAR(100) NOT NULL,
+  status TINYINT NOT NULL DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='租户表';
+
+CREATE TABLE xnet_aiops_sys_department (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  uid VARCHAR(50) NOT NULL UNIQUE,
+  tenant_uid VARCHAR(50) NOT NULL,
+  dept_name VARCHAR(100) NOT NULL,
+  status TINYINT NOT NULL DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_aiops_department_tenant (tenant_uid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='部门表';
+
+CREATE TABLE xnet_aiops_sys_team (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  uid VARCHAR(50) NOT NULL UNIQUE,
+  dept_uid VARCHAR(50) NOT NULL,
+  team_name VARCHAR(100) NOT NULL,
+  status TINYINT NOT NULL DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_aiops_team_department (dept_uid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='团队表';
+
+CREATE TABLE xnet_aiops_usr_organization_membership (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  tenant_uid VARCHAR(50) NOT NULL,
+  dept_uid VARCHAR(50),
+  team_uid VARCHAR(50),
+  status TINYINT NOT NULL DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_aiops_user_organization (user_id, tenant_uid, dept_uid, team_uid),
+  INDEX idx_aiops_membership_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户组织成员关系表';
+
 CREATE TABLE xnet_aiops_usr_session (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT NOT NULL,
@@ -484,14 +524,45 @@ CREATE TABLE IF NOT EXISTS xnet_aiops_clm_jenkins_version (
 -- 初始数据
 -- ============================================================
 
-INSERT INTO xnet_aiops_usr_user (uid, username, password, user_type, status)
-VALUES (UUID(), 'admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6CQARaY1.k0YGKISbVFnTUjXS', 'admin', 'active');
--- 默认密码: password
+INSERT INTO xnet_aiops_usr_user (uid, username, password, phone, user_type, status)
+VALUES ('USR-GOAI-OPERATOR', 'goai_operator', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6CQARaY1.k0YGKISbVFnTUjXS', '17870171303', 'user', 'active');
 
 INSERT INTO xnet_aiops_usr_role (role_name, role_code, description) VALUES
 ('管理员', 'ADMIN', '系统管理员，拥有所有权限'),
 ('运维人员', 'OPERATOR', '运维操作人员，可管理集群和服务'),
 ('观察者', 'VIEWER', '只读权限，查看集群状态');
+
+INSERT INTO xnet_aiops_sys_tenant (uid, tenant_name, status)
+VALUES ('TEN-SYNAPXNET', 'SynapXnet', 1);
+
+INSERT INTO xnet_aiops_sys_department (uid, tenant_uid, dept_name, status)
+VALUES ('DEPT-SYNAPXNET-PLATFORM', 'TEN-SYNAPXNET', '智能平台部', 1);
+
+INSERT INTO xnet_aiops_sys_team (uid, dept_uid, team_name, status)
+VALUES ('TEAM-GOAI-INFRA', 'DEPT-SYNAPXNET-PLATFORM', 'GOAI Infrastructure 联合团队', 1);
+
+SET @aiops_competition_user_id = (
+  SELECT id FROM xnet_aiops_usr_user WHERE phone = '17870171303' LIMIT 1
+);
+SET @aiops_operator_role_id = (
+  SELECT id FROM xnet_aiops_usr_role WHERE role_code = 'OPERATOR' LIMIT 1
+);
+INSERT INTO xnet_aiops_usr_user_role_cluster (user_id, role_id, cluster_id)
+VALUES (@aiops_competition_user_id, @aiops_operator_role_id, 0);
+
+INSERT INTO xnet_aiops_usr_organization_membership (
+  user_id,
+  tenant_uid,
+  dept_uid,
+  team_uid,
+  status
+) VALUES (
+  @aiops_competition_user_id,
+  'TEN-SYNAPXNET',
+  'DEPT-SYNAPXNET-PLATFORM',
+  'TEAM-GOAI-INFRA',
+  1
+);
 
 -- ============================================================
 -- K8S - Kubernetes管理模块
@@ -792,3 +863,21 @@ CREATE TABLE xnet_aiops_reg_tag (
   FOREIGN KEY (repository_id) REFERENCES xnet_aiops_reg_repository(id) ON DELETE CASCADE,
   INDEX idx_repository_id (repository_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='镜像标签表';
+
+-- 镜像同步任务表
+CREATE TABLE xnet_aiops_reg_sync_task (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  registry_id BIGINT NOT NULL COMMENT '目标 Harbor 仓库ID',
+  source_image VARCHAR(500) NOT NULL COMMENT '源镜像地址',
+  target_project VARCHAR(200) COMMENT '目标 Harbor 项目名',
+  sync_method VARCHAR(20) NOT NULL DEFAULT 'harbor_replication' COMMENT 'harbor_replication / skopeo',
+  harbor_policy_id BIGINT COMMENT 'Harbor replication policy ID',
+  harbor_execution_id BIGINT COMMENT 'Harbor replication execution ID',
+  status VARCHAR(20) NOT NULL DEFAULT 'pending' COMMENT 'pending/running/success/failed/cancelled',
+  status_detail TEXT COMMENT '状态详情/错误信息',
+  created_by VARCHAR(100),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_registry_id (registry_id),
+  INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='镜像同步任务表';

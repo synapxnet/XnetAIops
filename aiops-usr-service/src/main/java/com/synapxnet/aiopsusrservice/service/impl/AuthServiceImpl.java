@@ -1,6 +1,7 @@
 package com.synapxnet.aiopsusrservice.service.impl;
 
 import com.synapxnet.aiopsusrservice.entity.User;
+import com.synapxnet.aiopsusrservice.mapper.RoleMapper;
 import com.synapxnet.aiopsusrservice.mapper.UserMapper;
 import com.synapxnet.aiopsusrservice.security.jwt.JwtUtil;
 import com.synapxnet.aiopsusrservice.service.AuthService;
@@ -14,9 +15,10 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class AuthServiceImpl implements AuthService {
 
-    private static final String DEMO_PHONE = "12345678900";
+    private static final String DEMO_PHONE = "17870171303";
     private static final String DEMO_VERIFICATION_CODE = "000000";
 
+    private final RoleMapper roleMapper;
     private final UserMapper userMapper;
 
     @Resource
@@ -25,7 +27,8 @@ public class AuthServiceImpl implements AuthService {
     @Resource
     private JwtUtil jwtUtil;
 
-    public AuthServiceImpl(UserMapper userMapper) {
+    public AuthServiceImpl(RoleMapper roleMapper, UserMapper userMapper) {
+        this.roleMapper = roleMapper;
         this.userMapper = userMapper;
     }
 
@@ -99,7 +102,7 @@ public class AuthServiceImpl implements AuthService {
         info.put("username", user.getUsername());
         info.put("realName", user.getUsername());
         info.put("userType", user.getUserType());
-        info.put("roles", List.of(user.getUserType()));
+        info.put("roles", resolveRoleCodes(user));
         info.put("avatar", "");
         info.put("homePath", "/dashboard/overview");
         info.put("desc", "");
@@ -114,10 +117,26 @@ public class AuthServiceImpl implements AuthService {
         if (user == null) {
             throw new IllegalArgumentException("Invalid or expired token");
         }
-        if ("admin".equals(user.getUserType())) {
+        List<String> roleCodes = resolveRoleCodes(user);
+        if ("admin".equals(user.getUserType()) || roleCodes.contains("ADMIN")) {
             return List.of("AC_100100", "AC_100110", "AC_100120", "AC_100010");
         }
         return List.of("AC_100100");
+    }
+
+    /**
+     * 返回数据库中明确分配给用户的角色编码，不存在映射时退回普通用户类型。
+     *
+     * @param user 当前登录用户
+     * @return 当前用户的有效角色编码
+     */
+    private List<String> resolveRoleCodes(User user) {
+        List<String> roleCodes = roleMapper.findByUserId(user.getId()).stream()
+                .map(mapping -> mapping.getRoleCode())
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        return roleCodes.isEmpty() ? List.of(user.getUserType()) : roleCodes;
     }
 
     private String extractPhoneFromToken(String token) {

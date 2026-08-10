@@ -136,7 +136,7 @@ mysql -h "${DB_HOST}" -u root -p XnetAIops < sql/xnet_aiops_demo.sql
 ## 在线体验
 
 - 访问地址：<https://www.xnetaiops.synapxnet.cn>
-- 演示手机号：`12345678900`
+- 演示手机号：`17870171303`
 - 演示验证码：`000000`
 
 固定验证码仅用于开源项目展示，不应作为生产环境认证方案。
