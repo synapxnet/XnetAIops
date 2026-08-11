@@ -5,17 +5,22 @@
   "description": "三平台 Agent 工具的统一请求包络。传输上下文由 HTTP 请求头提供。",
   "type": "object",
   "additionalProperties": false,
-  "required": ["requestId", "toolName", "arguments", "dryRun"],
+  "required": [
+    "requestId",
+    "toolName",
+    "arguments",
+    "dryRun"
+  ],
   "properties": {
     "requestId": {
       "type": "string",
-      "minLength": 8,
+      "minLength": 1,
       "maxLength": 128
     },
     "toolName": {
       "type": "string",
-      "pattern": "^[a-z][a-z0-9]*(\\.[a-z][a-z0-9]*){2,}$",
-      "maxLength": 128
+      "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*){1,7}$",
+      "maxLength": 160
     },
     "arguments": {
       "type": "object"
@@ -25,15 +30,50 @@
       "minLength": 1,
       "maxLength": 128
     },
+    "planId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "planDigest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "stepId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "resourceId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "targetRevision": {
+      "type": "integer",
+      "minimum": 1
+    },
     "expectedResourceVersion": {
       "type": "string",
       "minLength": 1,
       "maxLength": 128
     },
+    "argumentsDigest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "compensation": {
+      "type": "boolean"
+    },
     "reason": {
       "type": "string",
-      "minLength": 4,
-      "maxLength": 1000
+      "minLength": 1,
+      "maxLength": 2048
+    },
+    "idempotencyKey": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
     },
     "dryRun": {
       "type": "boolean"
@@ -43,15 +83,45 @@
     {
       "if": {
         "properties": {
-          "toolName": { "const": "mlops.deployment.rollback" }
+          "toolName": {
+            "enum": [
+              "aiops.gpu.capacity.ensure",
+              "aiops.inference.runtime.tune",
+              "aiops.inference.capacity.apply",
+              "aiops.inference.traffic.shift",
+              "aiops.inference.autoscaling.policy.update",
+              "aiops.inference.capacity.converge",
+              "dataops.training.dataset.build",
+              "dataops.feature.backfill.start",
+              "mlops.model.iteration.start",
+              "mlops.feature.pipeline.publish",
+              "mlops.training.search.start",
+              "mlops.model.register",
+              "mlops.feature.fallback.apply",
+              "mlops.feature.fallback.remove",
+              "mlops.deployment.canary.apply",
+              "mlops.deployment.promote",
+              "mlops.deployment.rollback"
+            ]
+          }
         },
-        "required": ["toolName"]
+        "required": [
+          "toolName"
+        ]
       },
       "then": {
         "required": [
           "approvalId",
+          "planId",
+          "planDigest",
+          "stepId",
+          "resourceId",
+          "targetRevision",
           "expectedResourceVersion",
-          "reason"
+          "argumentsDigest",
+          "compensation",
+          "reason",
+          "idempotencyKey"
         ]
       }
     }

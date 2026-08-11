@@ -66,6 +66,16 @@ mvn -pl aiops-mon-service,aiops-k8s-service,aiops-svm-service -am test
 
 结果：`BUILD SUCCESS`；4 项新增测试通过（委托令牌 2、告警证据装配 2），0 失败、0 错误。K8s/SVM 的真实外部连接需在受控演示环境做集成验收。
 
+## GOAI Competition 1.1.0 三场景扩展
+
+比赛环境入口为 `https://goai.xnetaiops.synapxnet.online`，当前解析到比赛专用服务器 `150.109.120.15`。域名和 IP 只属于部署环境，代码必须继续通过配置注入端点。
+
+XnetAIops 当前负责 11 个固定工具：原有告警、服务健康、Kubernetes Workload，加上推理指标、恢复状态、GPU 容量保障、运行时调优、容量扩展、流量切换、队列感知弹性策略和稳态收敛。6 个写工具全部要求计划级审批、参数摘要、资源版本、职责分离、幂等和补偿标记；Dry Run 使用隔离虚拟版本，真实执行使用实际资源版本。
+
+本轮定向测试：Agent Contract 9 项、Kubernetes 6 项、Service 3 项、Monitoring 5 项通过。真实 HTTPS Live 已覆盖推荐容量处置、量化与风控场景的 AIOps 取证/验证调用，并在测试后恢复 K3s `3/3` 初态。
+
+权威工具契约位于 `contracts/goai-tools.v1.json`，由 `D:\synapxnet\scripts\Sync-GoaiCompetitionContracts.cjs` 从 OpenXnet 注册表生成。不得手工删除新增工具或恢复旧的 10 工具清单。
+
 ## 已知限制与后续注意
 
 - Fixture 不提供 kubeconfig，K8s 工具必须连接已授权测试集群。

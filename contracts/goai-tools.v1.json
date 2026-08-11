@@ -16,12 +16,28 @@
       "arguments": {
         "type": "object",
         "oneOf": [
-          { "required": ["alertId"] },
-          { "required": ["alertUid"] }
+          {
+            "required": [
+              "alertId"
+            ]
+          },
+          {
+            "required": [
+              "alertUid"
+            ]
+          }
         ],
         "properties": {
-          "alertId": { "type": "string" },
-          "alertUid": { "type": "string" }
+          "alertId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "alertUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
         },
         "additionalProperties": false
       }
@@ -39,10 +55,20 @@
       "requiresApproval": false,
       "arguments": {
         "type": "object",
-        "required": ["serviceUid"],
+        "required": [
+          "serviceUid"
+        ],
         "properties": {
-          "serviceUid": { "type": "string" },
-          "windowMinutes": { "type": "integer", "minimum": 1, "maximum": 1440 }
+          "serviceUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "windowMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1440
+          }
         },
         "additionalProperties": false
       }
@@ -60,13 +86,413 @@
       "requiresApproval": false,
       "arguments": {
         "type": "object",
-        "required": ["clusterId", "namespace", "kind", "name"],
+        "required": [
+          "clusterId",
+          "namespace",
+          "kind",
+          "name"
+        ],
         "properties": {
-          "clusterId": { "type": "string" },
-          "namespace": { "type": "string" },
-          "kind": { "type": "string", "enum": ["Deployment", "StatefulSet", "DaemonSet"] },
-          "name": { "type": "string" },
-          "windowMinutes": { "type": "integer", "minimum": 1, "maximum": 1440 }
+          "clusterId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "namespace": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "Deployment",
+              "StatefulSet",
+              "DaemonSet"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "windowMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1440
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "aiops.inference.metrics.get",
+      "title": "获取推理容量指标",
+      "description": "读取 GPU、推理队列、吞吐和延迟等容量证据。",
+      "owner": "XnetAIops",
+      "service": "aiops-mon-service",
+      "riskLevel": "READ",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/aiops.inference.metrics.get:invoke",
+      "timeoutMs": 5000,
+      "requiresApproval": false,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "serviceUid",
+          "deploymentUid"
+        ],
+        "properties": {
+          "serviceUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "deploymentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "windowMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1440
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "aiops.inference.recovery.status",
+      "title": "获取推理恢复状态",
+      "description": "读取演示环境中推理运行时、GPU 节点、流量、弹性策略和稳定副本的联合状态。",
+      "owner": "XnetAIops",
+      "service": "aiops-k8s-service",
+      "riskLevel": "READ",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/aiops.inference.recovery.status:invoke",
+      "timeoutMs": 5000,
+      "requiresApproval": false,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "serviceUid",
+          "deploymentUid"
+        ],
+        "properties": {
+          "serviceUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "deploymentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "aiops.gpu.capacity.ensure",
+      "title": "保障 GPU 节点容量",
+      "description": "在审批范围内检查并调整预热 GPU 节点池容量。",
+      "owner": "XnetAIops",
+      "service": "aiops-k8s-service",
+      "riskLevel": "HIGH_RISK_WRITE",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/aiops.gpu.capacity.ensure:invoke",
+      "timeoutMs": 20000,
+      "requiresApproval": true,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "clusterId",
+          "nodePool",
+          "desiredGpuNodes",
+          "mode"
+        ],
+        "properties": {
+          "clusterId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "nodePool": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "desiredGpuNodes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 64
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "ENSURE",
+              "CONVERGE"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "aiops.inference.runtime.tune",
+      "title": "调整推理运行时",
+      "description": "受控调整批大小、请求归并窗口和推理引擎优化配置。",
+      "owner": "XnetAIops",
+      "service": "aiops-k8s-service",
+      "riskLevel": "HIGH_RISK_WRITE",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/aiops.inference.runtime.tune:invoke",
+      "timeoutMs": 15000,
+      "requiresApproval": true,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "deploymentUid",
+          "maxBatchSize",
+          "duplicateWindowMs",
+          "engineProfile"
+        ],
+        "properties": {
+          "deploymentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "maxBatchSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1024
+          },
+          "duplicateWindowMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "engineProfile": {
+            "type": "string",
+            "enum": [
+              "BASELINE",
+              "DYNAMIC_SHAPE_OPTIMIZED"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "aiops.inference.capacity.apply",
+      "title": "应用推理容量处置",
+      "description": "在审批和资源版本校验后调整推理副本与批处理上限。",
+      "owner": "XnetAIops",
+      "service": "aiops-k8s-service",
+      "riskLevel": "HIGH_RISK_WRITE",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/aiops.inference.capacity.apply:invoke",
+      "timeoutMs": 15000,
+      "requiresApproval": true,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "clusterId",
+          "namespace",
+          "name",
+          "desiredReplicas",
+          "maxBatchSize"
+        ],
+        "properties": {
+          "clusterId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "namespace": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "desiredReplicas": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "maxBatchSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1024
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "aiops.inference.traffic.shift",
+      "title": "渐进切换推理流量",
+      "description": "按固定阶梯将流量引入已就绪的推理副本，并保留失败回切边界。",
+      "owner": "XnetAIops",
+      "service": "aiops-k8s-service",
+      "riskLevel": "HIGH_RISK_WRITE",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/aiops.inference.traffic.shift:invoke",
+      "timeoutMs": 15000,
+      "requiresApproval": true,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "serviceUid",
+          "target",
+          "percentages"
+        ],
+        "properties": {
+          "serviceUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "percentages": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 8,
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "aiops.inference.autoscaling.policy.update",
+      "title": "更新推理弹性策略",
+      "description": "将推理队列和延迟指标写入受治理的弹性策略。",
+      "owner": "XnetAIops",
+      "service": "aiops-k8s-service",
+      "riskLevel": "HIGH_RISK_WRITE",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/aiops.inference.autoscaling.policy.update:invoke",
+      "timeoutMs": 10000,
+      "requiresApproval": true,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "clusterId",
+          "namespace",
+          "name",
+          "queueDepthTarget",
+          "p99TargetMs",
+          "minReplicas",
+          "maxReplicas"
+        ],
+        "properties": {
+          "clusterId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "namespace": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "queueDepthTarget": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000
+          },
+          "p99TargetMs": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 60000
+          },
+          "minReplicas": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "maxReplicas": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "aiops.inference.capacity.converge",
+      "title": "收敛推理容量",
+      "description": "在恢复验证窗口后将临时容量收敛到稳定副本和批大小。",
+      "owner": "XnetAIops",
+      "service": "aiops-k8s-service",
+      "riskLevel": "HIGH_RISK_WRITE",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/aiops.inference.capacity.converge:invoke",
+      "timeoutMs": 15000,
+      "requiresApproval": true,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "clusterId",
+          "namespace",
+          "name",
+          "stableReplicas",
+          "maxBatchSize",
+          "observationMinutes"
+        ],
+        "properties": {
+          "clusterId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "namespace": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "stableReplicas": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "maxBatchSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1024
+          },
+          "observationMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1440
+          }
         },
         "additionalProperties": false
       }
@@ -84,9 +510,15 @@
       "requiresApproval": false,
       "arguments": {
         "type": "object",
-        "required": ["reportUid"],
+        "required": [
+          "reportUid"
+        ],
         "properties": {
-          "reportUid": { "type": "string" }
+          "reportUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
         },
         "additionalProperties": false
       }
@@ -104,14 +536,25 @@
       "requiresApproval": false,
       "arguments": {
         "type": "object",
-        "required": ["assetUid"],
+        "required": [
+          "assetUid"
+        ],
         "properties": {
-          "assetUid": { "type": "string" },
-          "schemaVersion": { "type": "string" },
-          "observedAt": { "type": "string", "format": "date-time" }
-        },
-        "not": {
-          "required": ["schemaVersion", "observedAt"]
+          "assetUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "schemaVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "observedAt": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
         },
         "additionalProperties": false
       }
@@ -129,11 +572,30 @@
       "requiresApproval": false,
       "arguments": {
         "type": "object",
-        "required": ["assetUid", "direction", "depth"],
+        "required": [
+          "assetUid",
+          "direction",
+          "depth"
+        ],
         "properties": {
-          "assetUid": { "type": "string" },
-          "direction": { "type": "string", "enum": ["UPSTREAM", "DOWNSTREAM", "BOTH"] },
-          "depth": { "type": "integer", "minimum": 1, "maximum": 5 }
+          "assetUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "UPSTREAM",
+              "DOWNSTREAM",
+              "BOTH"
+            ]
+          },
+          "depth": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          }
         },
         "additionalProperties": false
       }
@@ -151,10 +613,152 @@
       "requiresApproval": false,
       "arguments": {
         "type": "object",
-        "required": ["instanceUid"],
+        "required": [
+          "instanceUid"
+        ],
         "properties": {
-          "instanceUid": { "type": "string" },
-          "includeLogSummary": { "type": "boolean" }
+          "instanceUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "includeLogSummary": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dataops.training.dataset.build",
+      "title": "构建训练数据集",
+      "description": "基于固定历史窗口和因子变更生成版本化训练数据集。",
+      "owner": "XnetDataops",
+      "service": "dataops-tsk-service",
+      "riskLevel": "HIGH_RISK_WRITE",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/dataops.training.dataset.build:invoke",
+      "timeoutMs": 30000,
+      "requiresApproval": true,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "workflowInstanceUid",
+          "datasetUid",
+          "historyYears",
+          "addedFactors",
+          "removedFactors"
+        ],
+        "properties": {
+          "workflowInstanceUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "datasetUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "historyYears": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          },
+          "addedFactors": {
+            "type": "array",
+            "maxItems": 32,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          },
+          "removedFactors": {
+            "type": "array",
+            "maxItems": 32,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dataops.feature.backfill.start",
+      "title": "启动特征数据回填",
+      "description": "按修正版 Schema 对固定历史窗口执行可追溯特征回填。",
+      "owner": "XnetDataops",
+      "service": "dataops-tsk-service",
+      "riskLevel": "HIGH_RISK_WRITE",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/dataops.feature.backfill.start:invoke",
+      "timeoutMs": 30000,
+      "requiresApproval": true,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "assetUid",
+          "workflowInstanceUid",
+          "historyMonths",
+          "targetSchemaVersion",
+          "outputDatasetUid"
+        ],
+        "properties": {
+          "assetUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "workflowInstanceUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "historyMonths": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 120
+          },
+          "targetSchemaVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "outputDatasetUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dataops.dataset.validation.get",
+      "title": "获取数据集验证结果",
+      "description": "读取训练数据集的 Schema、质量、时间覆盖和可复现性验证结果。",
+      "owner": "XnetDataops",
+      "service": "dataops-tsk-service",
+      "riskLevel": "READ",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/dataops.dataset.validation.get:invoke",
+      "timeoutMs": 8000,
+      "requiresApproval": false,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "datasetUid"
+        ],
+        "properties": {
+          "datasetUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
         },
         "additionalProperties": false
       }
@@ -172,10 +776,50 @@
       "requiresApproval": false,
       "arguments": {
         "type": "object",
-        "required": ["deploymentUid"],
+        "required": [
+          "deploymentUid"
+        ],
         "properties": {
-          "deploymentUid": { "type": "string" },
-          "includeRevisions": { "type": "boolean" }
+          "deploymentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "includeRevisions": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "mlops.attribution.report.get",
+      "title": "获取模型归因报告",
+      "description": "读取因子贡献、市场漂移、模型退化和候选评估摘要。",
+      "owner": "XnetMLops",
+      "service": "mlops-mep-service",
+      "riskLevel": "COSTLY_READ",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/mlops.attribution.report.get:invoke",
+      "timeoutMs": 30000,
+      "requiresApproval": false,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "deploymentUid",
+          "reportUid"
+        ],
+        "properties": {
+          "deploymentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "reportUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
         },
         "additionalProperties": false
       }
@@ -193,12 +837,503 @@
       "requiresApproval": false,
       "arguments": {
         "type": "object",
-        "required": ["deploymentUid", "testDatasetRef", "sampleLimit"],
+        "required": [
+          "deploymentUid",
+          "testDatasetRef",
+          "sampleLimit"
+        ],
         "properties": {
-          "deploymentUid": { "type": "string" },
-          "testDatasetRef": { "type": "string" },
-          "sampleLimit": { "type": "integer", "minimum": 1, "maximum": 1000 },
-          "timeoutMs": { "type": "integer", "minimum": 100, "maximum": 60000 }
+          "deploymentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "testDatasetRef": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "sampleLimit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 60000
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "mlops.model.iteration.start",
+      "title": "启动模型受控迭代",
+      "description": "在审批后启动固定数据集、工作流和目标修订的训练评估流程。",
+      "owner": "XnetMLops",
+      "service": "mlops-mep-service",
+      "riskLevel": "HIGH_RISK_WRITE",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/mlops.model.iteration.start:invoke",
+      "timeoutMs": 15000,
+      "requiresApproval": true,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "deploymentUid",
+          "workflowInstanceUid",
+          "datasetRef",
+          "targetRevision"
+        ],
+        "properties": {
+          "deploymentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "workflowInstanceUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "datasetRef": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "targetRevision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "mlops.feature.pipeline.publish",
+      "title": "发布候选特征流水线",
+      "description": "将固定数据集与因子变更发布为可审计的候选特征流水线。",
+      "owner": "XnetMLops",
+      "service": "mlops-mep-service",
+      "riskLevel": "HIGH_RISK_WRITE",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/mlops.feature.pipeline.publish:invoke",
+      "timeoutMs": 15000,
+      "requiresApproval": true,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "deploymentUid",
+          "datasetUid",
+          "pipelineUid",
+          "addedFeatures",
+          "removedFeatures"
+        ],
+        "properties": {
+          "deploymentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "datasetUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "pipelineUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "addedFeatures": {
+            "type": "array",
+            "maxItems": 64,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          },
+          "removedFeatures": {
+            "type": "array",
+            "maxItems": 64,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "mlops.training.search.start",
+      "title": "启动并行训练搜索",
+      "description": "在固定数据集上启动受限并行训练或再训练搜索。",
+      "owner": "XnetMLops",
+      "service": "mlops-mep-service",
+      "riskLevel": "HIGH_RISK_WRITE",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/mlops.training.search.start:invoke",
+      "timeoutMs": 30000,
+      "requiresApproval": true,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "deploymentUid",
+          "datasetUid",
+          "experimentUid",
+          "targetRevision",
+          "trialCount",
+          "architectures",
+          "mode"
+        ],
+        "properties": {
+          "deploymentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "datasetUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "experimentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "targetRevision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "trialCount": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "architectures": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 16,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "ITERATION",
+              "RETRAIN"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "mlops.model.evaluation.run",
+      "title": "执行候选模型评估",
+      "description": "执行效果、风险、漂移和对抗验证，并返回不可变评估摘要。",
+      "owner": "XnetMLops",
+      "service": "mlops-mep-service",
+      "riskLevel": "COSTLY_READ",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/mlops.model.evaluation.run:invoke",
+      "timeoutMs": 60000,
+      "requiresApproval": false,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "deploymentUid",
+          "experimentUid",
+          "targetRevision",
+          "testDatasetRef",
+          "minimumSharpeImprovement",
+          "maximumDrawdownIncrease"
+        ],
+        "properties": {
+          "deploymentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "experimentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "targetRevision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "testDatasetRef": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "minimumSharpeImprovement": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10
+          },
+          "maximumDrawdownIncrease": {
+            "type": "number",
+            "minimum": -1,
+            "maximum": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "mlops.model.register",
+      "title": "登记候选模型",
+      "description": "将通过评估的候选修订登记到模型仓库并固化模型卡。",
+      "owner": "XnetMLops",
+      "service": "mlops-mep-service",
+      "riskLevel": "HIGH_RISK_WRITE",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/mlops.model.register:invoke",
+      "timeoutMs": 15000,
+      "requiresApproval": true,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "deploymentUid",
+          "experimentUid",
+          "targetRevision",
+          "modelCardUid"
+        ],
+        "properties": {
+          "deploymentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "experimentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "targetRevision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "modelCardUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "mlops.feature.fallback.apply",
+      "title": "启用备用特征集",
+      "description": "在模型修复期间受控启用已经验证的备用特征集。",
+      "owner": "XnetMLops",
+      "service": "mlops-mep-service",
+      "riskLevel": "HIGH_RISK_WRITE",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/mlops.feature.fallback.apply:invoke",
+      "timeoutMs": 10000,
+      "requiresApproval": true,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "deploymentUid",
+          "featureSetUid",
+          "reasonCode"
+        ],
+        "properties": {
+          "deploymentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "featureSetUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "reasonCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "mlops.feature.fallback.remove",
+      "title": "退出备用特征集",
+      "description": "新模型全量稳定后退出临时备用特征集。",
+      "owner": "XnetMLops",
+      "service": "mlops-mep-service",
+      "riskLevel": "HIGH_RISK_WRITE",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/mlops.feature.fallback.remove:invoke",
+      "timeoutMs": 10000,
+      "requiresApproval": true,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "deploymentUid",
+          "featureSetUid",
+          "targetRevision"
+        ],
+        "properties": {
+          "deploymentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "featureSetUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "targetRevision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "mlops.deployment.canary.apply",
+      "title": "应用模型灰度发布",
+      "description": "在固定环境、流量比例和观察窗内发布候选模型。",
+      "owner": "XnetMLops",
+      "service": "mlops-mep-service",
+      "riskLevel": "HIGH_RISK_WRITE",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/mlops.deployment.canary.apply:invoke",
+      "timeoutMs": 15000,
+      "requiresApproval": true,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "deploymentUid",
+          "targetRevision",
+          "trafficPercent",
+          "environment",
+          "observationMinutes"
+        ],
+        "properties": {
+          "deploymentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "targetRevision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "trafficPercent": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "environment": {
+            "type": "string",
+            "enum": [
+              "SIMULATION",
+              "SHADOW",
+              "CANARY"
+            ]
+          },
+          "observationMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1440
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "mlops.deployment.promote",
+      "title": "提升模型发布流量",
+      "description": "在灰度门槛通过后将候选修订提升到固定目标流量。",
+      "owner": "XnetMLops",
+      "service": "mlops-mep-service",
+      "riskLevel": "HIGH_RISK_WRITE",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/mlops.deployment.promote:invoke",
+      "timeoutMs": 15000,
+      "requiresApproval": true,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "deploymentUid",
+          "targetRevision",
+          "trafficPercent",
+          "environment"
+        ],
+        "properties": {
+          "deploymentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "targetRevision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "trafficPercent": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "environment": {
+            "type": "string",
+            "enum": [
+              "SIMULATION",
+              "SHADOW",
+              "CANARY"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "mlops.release.validation.get",
+      "title": "获取模型发布验证",
+      "description": "读取候选修订的训练、评估、灰度、流量和回滚就绪状态。",
+      "owner": "XnetMLops",
+      "service": "mlops-mep-service",
+      "riskLevel": "READ",
+      "method": "POST",
+      "path": "/api/agent/v1/tools/mlops.release.validation.get:invoke",
+      "timeoutMs": 8000,
+      "requiresApproval": false,
+      "arguments": {
+        "type": "object",
+        "required": [
+          "deploymentUid",
+          "targetRevision"
+        ],
+        "properties": {
+          "deploymentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "targetRevision": {
+            "type": "integer",
+            "minimum": 1
+          }
         },
         "additionalProperties": false
       }
@@ -216,16 +1351,37 @@
       "requiresApproval": true,
       "arguments": {
         "type": "object",
-        "required": ["deploymentUid", "targetRevision", "verificationPolicy"],
+        "required": [
+          "deploymentUid",
+          "targetRevision",
+          "verificationPolicy"
+        ],
         "properties": {
-          "deploymentUid": { "type": "string" },
-          "targetRevision": { "type": "integer", "minimum": 1 },
+          "deploymentUid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "targetRevision": {
+            "type": "integer",
+            "minimum": 1
+          },
           "verificationPolicy": {
             "type": "object",
-            "required": ["maxErrorRate", "maxP95Ms"],
+            "required": [
+              "maxErrorRate",
+              "maxP95Ms"
+            ],
             "properties": {
-              "maxErrorRate": { "type": "number", "minimum": 0, "maximum": 1 },
-              "maxP95Ms": { "type": "integer", "minimum": 1 }
+              "maxErrorRate": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "maxP95Ms": {
+                "type": "integer",
+                "minimum": 1
+              }
             },
             "additionalProperties": false
           }

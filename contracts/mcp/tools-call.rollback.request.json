@@ -13,8 +13,15 @@
       },
       "governance": {
         "approvalId": "apr_goai_001",
+        "planId": "feature-drift-full-recovery-v2",
+        "planDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "stepId": "deployment-rollback",
+        "resourceId": "deploy_risk_prod",
+        "targetRevision": 17,
         "expectedResourceVersion": "42",
-        "reason": "v18 输入维度与生产特征不一致，回滚至已验证的 v17",
+        "argumentsDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "compensation": true,
+        "reason": "独立验证未通过，执行预先审批的部署回滚。",
         "dryRun": false,
         "idempotencyKey": "idem_goai_rollback_001"
       }
@@ -23,7 +30,7 @@
       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
       "io.modelcontextprotocol/clientInfo": {
         "name": "openxnet-desktop",
-        "version": "1.0.0"
+        "version": "1.1.0"
       },
       "io.modelcontextprotocol/clientCapabilities": {},
       "traceparent": "00-0af7651916cd43dd8448eb211c80319c-00f067aa0ba902b7-01",

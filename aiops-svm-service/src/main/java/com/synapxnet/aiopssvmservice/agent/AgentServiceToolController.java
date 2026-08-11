@@ -47,11 +47,98 @@ public class AgentServiceToolController {
         long startedNanos = System.nanoTime();
         AgentContract.RequestContext context = AgentContract.requireContext(servletRequest, TOOL_NAME, body);
         ServiceHealthArguments arguments = requireArguments(body.arguments());
-        ServiceInstance service = loadService(arguments.serviceUid());
-        List<RoleInstance> roles = serviceInstanceService.listRoles(service.getId());
-        ServiceHealthEvidence evidence = assemble(service, roles, arguments.windowMinutes());
-        String version = String.valueOf(service.getConfigVersion());
+        ServiceHealthEvidence evidence;
+        String version;
+        try {
+            ServiceInstance service = loadService(arguments.serviceUid());
+            List<RoleInstance> roles = serviceInstanceService.listRoles(service.getId());
+            evidence = assemble(service, roles, arguments.windowMinutes());
+            version = String.valueOf(service.getConfigVersion());
+        } catch (AgentContractException exception) {
+            if (!"RESOURCE_NOT_FOUND".equals(exception.getCode())) {
+                throw exception;
+            }
+            evidence = competitionSandboxEvidence(arguments.serviceUid(), arguments.windowMinutes());
+            if (evidence == null) {
+                throw exception;
+            }
+            version = "competition-sandbox-1";
+        }
         return AgentContract.success(evidence, context, "XnetAIops/svm", version, startedNanos);
+    }
+
+    /**
+     * 返回固定比赛服务的隔离沙盘健康证据；未知 UID 不提供通用兜底。
+     *
+     * @param serviceUid 服务 UID
+     * @param requestedWindow 观测窗口
+     * @return 白名单沙盘证据，非白名单返回 null
+     */
+    static ServiceHealthEvidence competitionSandboxEvidence(
+            String serviceUid,
+            Integer requestedWindow) {
+        if ("service_rec_inference".equals(serviceUid)) {
+            return sandboxHealthEvidence(
+                    serviceUid,
+                    "推荐推理服务",
+                    HealthConclusion.DEGRADED,
+                    requestedWindow,
+                    List.of("GPU_QUEUE_SATURATED", "CPU_HPA_NOT_TRIGGERED"));
+        }
+        if ("service_quant_signal".equals(serviceUid)) {
+            return sandboxHealthEvidence(
+                    serviceUid,
+                    "量化信号服务",
+                    HealthConclusion.HEALTHY,
+                    requestedWindow,
+                    List.of("INFRASTRUCTURE_HEALTHY", "MODEL_QUALITY_REQUIRES_ATTRIBUTION"));
+        }
+        return null;
+    }
+
+    /**
+     * 构造带来源和窗口标记的固定比赛服务健康证据。
+     *
+     * @param serviceUid 服务 UID
+     * @param serviceName 服务名称
+     * @param conclusion 健康结论
+     * @param requestedWindow 观测窗口
+     * @param scenarioReasonCodes 场景原因码
+     * @return 可跨平台引用的隔离沙盘证据
+     */
+    private static ServiceHealthEvidence sandboxHealthEvidence(
+            String serviceUid,
+            String serviceName,
+            HealthConclusion conclusion,
+            Integer requestedWindow,
+            List<String> scenarioReasonCodes) {
+        Instant observedAt = Instant.parse("2026-08-11T08:00:00Z");
+        List<String> reasonCodes = new ArrayList<>(scenarioReasonCodes);
+        reasonCodes.add("COMPETITION_SANDBOX_SNAPSHOT");
+        if (requestedWindow != null) {
+            reasonCodes.add("WINDOW_" + requestedWindow + "M");
+        }
+        RoleHealth role = new RoleHealth(
+                serviceUid + "-role-1",
+                "inference",
+                "competition-sandbox",
+                "running",
+                false,
+                observedAt);
+        return new ServiceHealthEvidence(
+                serviceUid,
+                serviceName,
+                "running",
+                42,
+                false,
+                1,
+                1,
+                0,
+                List.of(role),
+                List.of(),
+                conclusion,
+                List.copyOf(reasonCodes),
+                observedAt);
     }
 
     /**

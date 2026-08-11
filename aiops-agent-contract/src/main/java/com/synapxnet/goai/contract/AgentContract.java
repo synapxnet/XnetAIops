@@ -46,7 +46,9 @@ public final class AgentContract {
         if (body.requestId() == null || body.requestId().isBlank() || body.requestId().length() > 128) {
             throw new AgentContractException(400, "INVALID_ARGUMENT", "requestId 缺失或格式无效");
         }
-        return context.withRequestId(body.requestId());
+        RequestContext resolved = context.withRequestId(body.requestId());
+        request.setAttribute(CONTEXT_ATTRIBUTE, resolved);
+        return resolved;
     }
 
     /**
@@ -106,8 +108,16 @@ public final class AgentContract {
      * @param toolName 固定工具名
      * @param arguments 工具专用参数
      * @param approvalId 写操作审批引用
+     * @param planId 完整处置计划标识
+     * @param planDigest 完整处置计划摘要
+     * @param stepId 当前计划步骤标识
+     * @param resourceId 当前步骤目标资源
+     * @param targetRevision 当前步骤目标修订
      * @param expectedResourceVersion 写操作预期资源版本
+     * @param argumentsDigest 当前领域参数摘要
+     * @param compensation 是否为预先审批的补偿步骤
      * @param reason 写操作原因
+     * @param idempotencyKey 当前步骤幂等键
      * @param dryRun 是否只执行预检
      * @param <T> 参数 DTO 类型
      */
@@ -116,8 +126,16 @@ public final class AgentContract {
             String toolName,
             T arguments,
             String approvalId,
+            String planId,
+            String planDigest,
+            String stepId,
+            String resourceId,
+            Long targetRevision,
             String expectedResourceVersion,
+            String argumentsDigest,
+            Boolean compensation,
             String reason,
+            String idempotencyKey,
             Boolean dryRun) {
     }
 

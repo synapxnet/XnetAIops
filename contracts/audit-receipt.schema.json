@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.openxnet.local/agent/v1/audit-receipt.schema.json",
   "title": "OpenXnet Agent Audit Receipt",
-  "description": "工具调用产生的可追溯审计回执，写工具必须返回。",
+  "description": "受控写工具返回的追加式审计回执。",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -13,54 +13,104 @@
     "traceId",
     "toolName",
     "actorId",
-    "riskLevel",
+    "approverId",
+    "approvalId",
     "requestDigest",
-    "status",
-    "startedAt"
+    "actionId",
+    "actionStatus",
+    "beforeResourceVersion",
+    "afterResourceVersion",
+    "startedAt",
+    "completedAt",
+    "evidenceIds"
   ],
   "properties": {
-    "receiptId": { "type": "string", "minLength": 8, "maxLength": 128 },
-    "requestId": { "type": "string", "minLength": 8, "maxLength": 128 },
-    "workspaceId": { "type": "string", "minLength": 1, "maxLength": 128 },
-    "incidentId": { "type": "string", "minLength": 1, "maxLength": 128 },
-    "traceId": { "type": "string", "minLength": 1, "maxLength": 128 },
-    "toolName": { "type": "string", "minLength": 3, "maxLength": 128 },
-    "actorId": { "type": "string", "minLength": 1, "maxLength": 128 },
-    "approvalId": { "type": ["string", "null"], "maxLength": 128 },
-    "idempotencyKey": { "type": ["string", "null"], "maxLength": 128 },
-    "riskLevel": {
+    "receiptId": {
       "type": "string",
-      "enum": ["READ", "COSTLY_READ", "LOW_RISK_WRITE", "HIGH_RISK_WRITE"]
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "requestId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "workspaceId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "incidentId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "traceId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "toolName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "actorId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "approverId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "approvalId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
     },
     "requestDigest": {
       "type": "string",
       "pattern": "^[a-f0-9]{64}$"
     },
-    "status": {
+    "actionId": {
       "type": "string",
-      "enum": ["PENDING", "RUNNING", "SUCCEEDED", "FAILED", "REJECTED", "CANCELLED"]
+      "minLength": 1,
+      "maxLength": 512
     },
-    "targetResource": {
-      "type": ["object", "null"],
-      "additionalProperties": false,
-      "properties": {
-        "type": { "type": "string", "maxLength": 128 },
-        "uid": { "type": "string", "maxLength": 256 },
-        "beforeVersion": { "type": ["string", "null"], "maxLength": 128 },
-        "afterVersion": { "type": ["string", "null"], "maxLength": 128 }
-      },
-      "required": ["type", "uid"]
+    "actionStatus": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "beforeResourceVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "afterResourceVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "startedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completedAt": {
+      "type": "string",
+      "format": "date-time"
     },
     "evidenceIds": {
       "type": "array",
+      "maxItems": 512,
       "uniqueItems": true,
-      "items": { "type": "string", "minLength": 1, "maxLength": 128 }
-    },
-    "startedAt": { "type": "string", "format": "date-time" },
-    "completedAt": { "type": ["string", "null"], "format": "date-time" },
-    "resultDigest": {
-      "type": ["string", "null"],
-      "pattern": "^[a-f0-9]{64}$"
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 512
+      }
     }
   }
 }

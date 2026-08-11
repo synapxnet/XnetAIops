@@ -48,10 +48,67 @@ public class AgentAlertToolController {
         long startedNanos = System.nanoTime();
         AgentContract.RequestContext context = AgentContract.requireContext(servletRequest, TOOL_NAME, body);
         AlertGetArguments arguments = requireArguments(body.arguments());
-        AlertHistory alert = loadAlert(arguments);
-        AlertEvidence evidence = evidenceAssembler.assemble(alert);
-        String sourceVersion = alert.getId() + ":" + alert.getTriggeredAt() + ":" + alert.getResolvedAt();
+        AlertEvidence evidence;
+        String sourceVersion;
+        try {
+            AlertHistory alert = loadAlert(arguments);
+            evidence = evidenceAssembler.assemble(alert);
+            sourceVersion = alert.getId() + ":" + alert.getTriggeredAt() + ":" + alert.getResolvedAt();
+        } catch (AgentContractException exception) {
+            if (!"RESOURCE_NOT_FOUND".equals(exception.getCode()) || arguments.alertUid() == null) {
+                throw exception;
+            }
+            evidence = competitionSandboxEvidence(arguments.alertUid());
+            if (evidence == null) {
+                throw exception;
+            }
+            sourceVersion = "competition-sandbox-1";
+        }
         return AgentContract.success(evidence, context, "XnetAIops/mon", sourceVersion, startedNanos);
+    }
+
+    /**
+     * 返回固定比赛告警的隔离沙盘证据；未知 UID 不提供通用兜底。
+     *
+     * @param alertUid 告警 UID
+     * @return 白名单沙盘证据，非白名单返回 null
+     */
+    static AlertEvidence competitionSandboxEvidence(String alertUid) {
+        if ("alert_rec_p99_spike".equals(alertUid)) {
+            return new AlertEvidence(
+                    alertUid,
+                    "推荐推理 P99 与队列深度异常",
+                    "P1",
+                    "FIRING",
+                    "3",
+                    "gpu-node-pool",
+                    "GPU 利用率达到 100%，推理队列积压且 CPU HPA 未触发。",
+                    "执行受审批的 GPU 容量恢复计划并独立验证业务指标。",
+                    Instant.parse("2026-08-11T07:45:00Z"),
+                    null,
+                    new RelatedResource(
+                            "Deployment", "service_rec_inference", "recommendation-prod",
+                            "recommendation-inference"),
+                    "competition-sandbox-1");
+        }
+        if ("alert_quant_ic_degradation".equals(alertUid)) {
+            return new AlertEvidence(
+                    alertUid,
+                    "量化价值因子 IC 退化",
+                    "P1",
+                    "FIRING",
+                    "3",
+                    "quant-model-monitor",
+                    "线上模型 IC 降至 0.01，低于 0.03 门槛，基础服务健康。",
+                    "完成归因、版本化数据集、训练评估和模拟盘灰度闭环。",
+                    Instant.parse("2026-08-11T07:15:00Z"),
+                    null,
+                    new RelatedResource(
+                            "ModelDeployment", "deploy_quant_value_prod", "quant-prod",
+                            "quant-signal-inference"),
+                    "competition-sandbox-1");
+        }
+        return null;
     }
 
     /**

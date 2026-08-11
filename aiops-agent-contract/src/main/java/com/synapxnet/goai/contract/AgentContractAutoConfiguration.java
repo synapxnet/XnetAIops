@@ -27,6 +27,27 @@ public class AgentContractAutoConfiguration {
     }
 
     /**
+     * 创建三平台共用的计划级审批内省客户端。
+     *
+     * @param objectMapper Spring JSON 映射器
+     * @param baseUrl 审批服务根地址
+     * @param serviceToken 审批服务内部令牌
+     * @param connectTimeoutMillis 审批服务连接超时毫秒数
+     * @param readTimeoutMillis 审批服务读取超时毫秒数
+     * @return 失败关闭的审批验证器
+     */
+    @Bean
+    GovernedApprovalVerifier governedApprovalVerifier(
+            ObjectMapper objectMapper,
+            @Value("${openxnet.approval.base-url:http://127.0.0.1:8080}") String baseUrl,
+            @Value("${openxnet.approval.service-token:}") String serviceToken,
+            @Value("${openxnet.approval.connect-timeout-ms:3000}") int connectTimeoutMillis,
+            @Value("${openxnet.approval.read-timeout-ms:5000}") int readTimeoutMillis) {
+        return new GovernedApprovalVerifier(
+                objectMapper, baseUrl, serviceToken, connectTimeoutMillis, readTimeoutMillis);
+    }
+
+    /**
      * 注册只作用于 Agent v1 API 的上下文过滤器。
      *
      * @param verifier 委托令牌验证器
