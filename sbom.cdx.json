@@ -1,0 +1,244 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:69797de8-84f8-5162-b81f-0c9804807c71",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-08-12T16:30:00+08:00",
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "name": "OpenXnet deterministic SBOM generator",
+          "version": "1.0.0"
+        }
+      ]
+    },
+    "authors": [
+      {
+        "name": "SynapXnet Team"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "pkg:github/synapxnet/XnetAIops@1.0.0",
+      "group": "synapxnet",
+      "name": "XnetAIops",
+      "version": "1.0.0",
+      "description": "Infrastructure and service operations platform",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:github/synapxnet/XnetAIops@1.0.0",
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/synapxnet/XnetAIops/tree/goai-v1.1.0"
+        },
+        {
+          "type": "release-notes",
+          "url": "https://github.com/synapxnet/XnetAIops/releases/tag/goai-v1.1.0"
+        }
+      ],
+      "properties": [
+        {
+          "name": "com.synapxnet.release.tag",
+          "value": "goai-v1.1.0"
+        },
+        {
+          "name": "com.synapxnet.git.base-commit",
+          "value": "bea035b1e26f551bb9dd1b3f1219ab7d4ea5f239"
+        },
+        {
+          "name": "com.synapxnet.sbom.source",
+          "value": "repository lock files and build manifests"
+        }
+      ]
+    },
+    "properties": [
+      {
+        "name": "com.synapxnet.sbom.generator",
+        "value": "prepare_goai_repositories.py/1.0.0"
+      },
+      {
+        "name": "com.synapxnet.sbom.scope",
+        "value": "declared and locked software dependencies; runtime infrastructure images excluded"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.17.0",
+      "name": "com.fasterxml.jackson.core/jackson-databind",
+      "version": "2.17.0",
+      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.17.0",
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/com.hierynomus/sshj@0.38.0",
+      "name": "com.hierynomus/sshj",
+      "version": "0.38.0",
+      "purl": "pkg:maven/com.hierynomus/sshj@0.38.0",
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/com.jcraft/jsch@0.1.55",
+      "name": "com.jcraft/jsch",
+      "version": "0.1.55",
+      "purl": "pkg:maven/com.jcraft/jsch@0.1.55",
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/com.mysql/mysql-connector-j@managed",
+      "name": "com.mysql/mysql-connector-j",
+      "version": "managed",
+      "purl": "pkg:maven/com.mysql/mysql-connector-j@managed",
+      "scope": "optional"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/com.synapxnet/aiops-agent-contract@${project.version}",
+      "name": "com.synapxnet/aiops-agent-contract",
+      "version": "${project.version}",
+      "purl": "pkg:maven/com.synapxnet/aiops-agent-contract@${project.version}",
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/io.fabric8/kubernetes-client-api@7.2.0",
+      "name": "io.fabric8/kubernetes-client-api",
+      "version": "7.2.0",
+      "purl": "pkg:maven/io.fabric8/kubernetes-client-api@7.2.0",
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/io.fabric8/kubernetes-client@7.2.0",
+      "name": "io.fabric8/kubernetes-client",
+      "version": "7.2.0",
+      "purl": "pkg:maven/io.fabric8/kubernetes-client@7.2.0",
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/io.jsonwebtoken/jjwt-api@0.11.5",
+      "name": "io.jsonwebtoken/jjwt-api",
+      "version": "0.11.5",
+      "purl": "pkg:maven/io.jsonwebtoken/jjwt-api@0.11.5",
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/io.jsonwebtoken/jjwt-impl@0.11.5",
+      "name": "io.jsonwebtoken/jjwt-impl",
+      "version": "0.11.5",
+      "purl": "pkg:maven/io.jsonwebtoken/jjwt-impl@0.11.5",
+      "scope": "optional"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/io.jsonwebtoken/jjwt-jackson@0.11.5",
+      "name": "io.jsonwebtoken/jjwt-jackson",
+      "version": "0.11.5",
+      "purl": "pkg:maven/io.jsonwebtoken/jjwt-jackson@0.11.5",
+      "scope": "optional"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/org.jsoup/jsoup@1.17.2",
+      "name": "org.jsoup/jsoup",
+      "version": "1.17.2",
+      "purl": "pkg:maven/org.jsoup/jsoup@1.17.2",
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/org.mybatis.spring.boot/mybatis-spring-boot-starter@3.0.4",
+      "name": "org.mybatis.spring.boot/mybatis-spring-boot-starter",
+      "version": "3.0.4",
+      "purl": "pkg:maven/org.mybatis.spring.boot/mybatis-spring-boot-starter@3.0.4",
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/org.projectlombok/lombok@managed",
+      "name": "org.projectlombok/lombok",
+      "version": "managed",
+      "purl": "pkg:maven/org.projectlombok/lombok@managed",
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/org.springframework.boot/spring-boot-starter-data-redis@managed",
+      "name": "org.springframework.boot/spring-boot-starter-data-redis",
+      "version": "managed",
+      "purl": "pkg:maven/org.springframework.boot/spring-boot-starter-data-redis@managed",
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/org.springframework.boot/spring-boot-starter-test@3.4.6",
+      "name": "org.springframework.boot/spring-boot-starter-test",
+      "version": "3.4.6",
+      "purl": "pkg:maven/org.springframework.boot/spring-boot-starter-test@3.4.6",
+      "scope": "excluded"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/org.springframework.boot/spring-boot-starter-web@3.4.6",
+      "name": "org.springframework.boot/spring-boot-starter-web",
+      "version": "3.4.6",
+      "purl": "pkg:maven/org.springframework.boot/spring-boot-starter-web@3.4.6",
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/org.springframework.boot/spring-boot-starter-websocket@managed",
+      "name": "org.springframework.boot/spring-boot-starter-websocket",
+      "version": "managed",
+      "purl": "pkg:maven/org.springframework.boot/spring-boot-starter-websocket@managed",
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/org.springframework.security/spring-security-crypto@managed",
+      "name": "org.springframework.security/spring-security-crypto",
+      "version": "managed",
+      "purl": "pkg:maven/org.springframework.security/spring-security-crypto@managed",
+      "scope": "required"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:github/synapxnet/XnetAIops@1.0.0",
+      "dependsOn": [
+        "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.17.0",
+        "pkg:maven/com.hierynomus/sshj@0.38.0",
+        "pkg:maven/com.jcraft/jsch@0.1.55",
+        "pkg:maven/com.mysql/mysql-connector-j@managed",
+        "pkg:maven/com.synapxnet/aiops-agent-contract@${project.version}",
+        "pkg:maven/io.fabric8/kubernetes-client-api@7.2.0",
+        "pkg:maven/io.fabric8/kubernetes-client@7.2.0",
+        "pkg:maven/io.jsonwebtoken/jjwt-api@0.11.5",
+        "pkg:maven/io.jsonwebtoken/jjwt-impl@0.11.5",
+        "pkg:maven/io.jsonwebtoken/jjwt-jackson@0.11.5",
+        "pkg:maven/org.jsoup/jsoup@1.17.2",
+        "pkg:maven/org.mybatis.spring.boot/mybatis-spring-boot-starter@3.0.4",
+        "pkg:maven/org.projectlombok/lombok@managed",
+        "pkg:maven/org.springframework.boot/spring-boot-starter-data-redis@managed",
+        "pkg:maven/org.springframework.boot/spring-boot-starter-test@3.4.6",
+        "pkg:maven/org.springframework.boot/spring-boot-starter-web@3.4.6",
+        "pkg:maven/org.springframework.boot/spring-boot-starter-websocket@managed",
+        "pkg:maven/org.springframework.security/spring-security-crypto@managed"
+      ]
+    }
+  ]
+}
