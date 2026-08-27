@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 暴露服务实例健康证据工具，并由后端统一计算健康结论。
@@ -23,14 +24,19 @@ public class AgentServiceToolController {
 
     private static final String TOOL_NAME = "aiops.service.health";
     private final ServiceInstanceService serviceInstanceService;
+    private final QuantitativeRuntimeHealthClient quantitativeRuntimeHealthClient;
 
     /**
      * 创建服务健康工具 Controller。
      *
      * @param serviceInstanceService 服务实例领域服务
+     * @param quantitativeRuntimeHealthClient 真实量化运行时健康客户端
      */
-    public AgentServiceToolController(ServiceInstanceService serviceInstanceService) {
+    public AgentServiceToolController(
+            ServiceInstanceService serviceInstanceService,
+            QuantitativeRuntimeHealthClient quantitativeRuntimeHealthClient) {
         this.serviceInstanceService = serviceInstanceService;
+        this.quantitativeRuntimeHealthClient = quantitativeRuntimeHealthClient;
     }
 
     /**
@@ -47,6 +53,17 @@ public class AgentServiceToolController {
         long startedNanos = System.nanoTime();
         AgentContract.RequestContext context = AgentContract.requireContext(servletRequest, TOOL_NAME, body);
         ServiceHealthArguments arguments = requireArguments(body.arguments());
+        if (quantitativeRuntimeHealthClient.supports(arguments.serviceUid())) {
+            ServiceHealthEvidence evidence = quantitativeRuntimeEvidence(
+                    quantitativeRuntimeHealthClient.health(),
+                    arguments.windowMinutes());
+            return AgentContract.success(
+                    evidence,
+                    context,
+                    "XnetAIops/quantitative-runtime",
+                    String.valueOf(evidence.configVersion()),
+                    startedNanos);
+        }
         ServiceHealthEvidence evidence;
         String version;
         try {
@@ -94,6 +111,86 @@ public class AgentServiceToolController {
                     List.of("INFRASTRUCTURE_HEALTHY", "MODEL_QUALITY_REQUIRES_ATTRIBUTION"));
         }
         return null;
+    }
+
+    /**
+     * 将真实量化运行时响应转换为 AIOps 服务健康证据。
+     *
+     * @param health 运行时健康响应
+     * @param requestedWindow 观测窗口
+     * @return 可跨平台引用的真实健康证据
+     */
+    private ServiceHealthEvidence quantitativeRuntimeEvidence(
+            Map<String, Object> health,
+            Integer requestedWindow) {
+        boolean ready = "ready".equals(health.get("status"));
+        Map<String, Object> deployment = nestedMap(health, "deployment");
+        int resourceVersion = intValue(deployment, "resourceVersion");
+        List<String> reasonCodes = new ArrayList<>();
+        reasonCodes.add(ready ? "QUANTITATIVE_RUNTIME_READY" : "QUANTITATIVE_RUNTIME_DEGRADED");
+        reasonCodes.add("DATAOPS_PRODUCT_ROWS_" + intValue(health, "datasetRows"));
+        reasonCodes.add("MODEL_QUALITY_REQUIRES_ATTRIBUTION");
+        reasonCodes.add("RESEARCH_AND_SIMULATION_ONLY");
+        if (requestedWindow != null) {
+            reasonCodes.add("WINDOW_" + requestedWindow + "M");
+        }
+        Instant observedAt = Instant.now();
+        RoleHealth role = new RoleHealth(
+                "service_quant_signal-role-runtime",
+                "quantitative-runtime",
+                "quantitative-runtime",
+                ready ? "running" : "degraded",
+                false,
+                observedAt);
+        return new ServiceHealthEvidence(
+                "service_quant_signal",
+                "A 股量化研究信号服务",
+                ready ? "running" : "degraded",
+                resourceVersion,
+                false,
+                1,
+                ready ? 1 : 0,
+                ready ? 0 : 1,
+                List.of(role),
+                List.of(),
+                ready ? HealthConclusion.HEALTHY : HealthConclusion.DEGRADED,
+                List.copyOf(reasonCodes),
+                observedAt);
+    }
+
+    /**
+     * 从运行时响应读取必需的嵌套对象。
+     *
+     * @param value 运行时响应
+     * @param key 字段名
+     * @return 嵌套对象
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> nestedMap(Map<String, Object> value, String key) {
+        Object nested = value.get(key);
+        if (!(nested instanceof Map<?, ?> map)) {
+            throw new AgentContractException(502, "INVALID_RUNTIME_RESPONSE", "量化运行时响应缺少 " + key);
+        }
+        return (Map<String, Object>) map;
+    }
+
+    /**
+     * 从运行时响应读取并约束为 Java 整型的数值字段。
+     *
+     * @param value 运行时响应
+     * @param key 字段名
+     * @return 有界整型值
+     */
+    private int intValue(Map<String, Object> value, String key) {
+        Object number = value.get(key);
+        if (!(number instanceof Number result)) {
+            throw new AgentContractException(502, "INVALID_RUNTIME_RESPONSE", "量化运行时响应缺少 " + key);
+        }
+        long longValue = result.longValue();
+        if (longValue < 0 || longValue > Integer.MAX_VALUE) {
+            throw new AgentContractException(502, "INVALID_RUNTIME_RESPONSE", "量化运行时数值越界: " + key);
+        }
+        return (int) longValue;
     }
 
     /**
