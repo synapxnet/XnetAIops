@@ -31,9 +31,9 @@ services:
     ports:
       - "${CLM_PORT:-9181}:9181"
     environment:
-      - DB_HOST=${DB_HOST:-192.168.1.5}
+      - DB_HOST=${DB_HOST:?DB_HOST is required}
       - DB_PORT=${DB_PORT:-3306}
-      - DB_PASSWORD=${DB_PASSWORD:-000000}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
     networks:
       - aiops-net
     restart: unless-stopped
@@ -46,9 +46,9 @@ services:
     ports:
       - "${HOM_PORT:-9182}:9182"
     environment:
-      - DB_HOST=${DB_HOST:-192.168.1.5}
+      - DB_HOST=${DB_HOST:?DB_HOST is required}
       - DB_PORT=${DB_PORT:-3306}
-      - DB_PASSWORD=${DB_PASSWORD:-000000}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
     networks:
       - aiops-net
     restart: unless-stopped
@@ -61,9 +61,9 @@ services:
     ports:
       - "${SVM_PORT:-9183}:9183"
     environment:
-      - DB_HOST=${DB_HOST:-192.168.1.5}
+      - DB_HOST=${DB_HOST:?DB_HOST is required}
       - DB_PORT=${DB_PORT:-3306}
-      - DB_PASSWORD=${DB_PASSWORD:-000000}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
     networks:
       - aiops-net
     restart: unless-stopped
@@ -76,9 +76,9 @@ services:
     ports:
       - "${MON_PORT:-9184}:9184"
     environment:
-      - DB_HOST=${DB_HOST:-192.168.1.5}
+      - DB_HOST=${DB_HOST:?DB_HOST is required}
       - DB_PORT=${DB_PORT:-3306}
-      - DB_PASSWORD=${DB_PASSWORD:-000000}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
     networks:
       - aiops-net
     restart: unless-stopped
@@ -91,10 +91,10 @@ services:
     ports:
       - "${USR_PORT:-9185}:9185"
     environment:
-      - DB_HOST=${DB_HOST:-192.168.1.5}
+      - DB_HOST=${DB_HOST:?DB_HOST is required}
       - DB_PORT=${DB_PORT:-3306}
-      - DB_PASSWORD=${DB_PASSWORD:-000000}
-      - REDIS_HOST=${REDIS_HOST:-192.168.1.5}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
+      - REDIS_HOST=${REDIS_HOST:?REDIS_HOST is required}
       - REDIS_PORT=${REDIS_PORT:-6379}
     networks:
       - aiops-net
@@ -108,9 +108,9 @@ services:
     ports:
       - "${K8S_PORT:-9186}:9186"
     environment:
-      - DB_HOST=${DB_HOST:-192.168.1.5}
+      - DB_HOST=${DB_HOST:?DB_HOST is required}
       - DB_PORT=${DB_PORT:-3306}
-      - DB_PASSWORD=${DB_PASSWORD:-000000}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
     networks:
       - aiops-net
     restart: unless-stopped
@@ -123,9 +123,9 @@ services:
     ports:
       - "${REG_PORT:-9187}:9187"
     environment:
-      - DB_HOST=${DB_HOST:-192.168.1.5}
+      - DB_HOST=${DB_HOST:?DB_HOST is required}
       - DB_PORT=${DB_PORT:-3306}
-      - DB_PASSWORD=${DB_PASSWORD:-000000}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
     networks:
       - aiops-net
     restart: unless-stopped

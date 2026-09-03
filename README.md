@@ -9,7 +9,7 @@
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.6-6db33f.svg)](https://spring.io/projects/spring-boot)
 [![License](https://img.shields.io/badge/license-MIT-2ea44f.svg)](./LICENSE)
 
-[在线体验](https://www.xnetaiops.synapxnet.cn) · [OpenXnet 开源社区](https://openxnet.synapxnet.com) · [查看许可](./LICENSE)
+[在线体验](https://www.xnetaiops.synapxnet.cn) · [前端仓库 XnetAIops-web](https://github.com/synapxnet/XnetAIops-web) · [OpenXnet 开源社区](https://openxnet.synapxnet.com) · [查看许可](./LICENSE)
 
 </div>
 
@@ -19,7 +19,15 @@
 
 XnetAIops 是由 **SynapXnet 团队**开源的智能运维平台，面向服务器、基础软件、业务服务、Kubernetes 集群与镜像仓库等运维对象，提供从资源纳管、部署交付到监控告警的统一工作台。
 
-项目采用模块化微服务架构，将集群生命周期、主机资产、服务编排、可观测性、权限控制等能力拆分为独立服务，便于按场景组合、扩展和二次开发。
+本仓库是平台后端，与 [XnetAIops-web](https://github.com/synapxnet/XnetAIops-web) 前端仓库共同组成企业级、多租户、前后端分离系统。项目采用模块化微服务架构，将集群生命周期、主机资产、服务编排、可观测性、租户权限控制等能力拆分为独立服务，便于按场景组合、扩展和二次开发。
+
+## 项目优势
+
+- **企业多租户**：通过用户、角色、权限与资源边界服务不同组织和团队。
+- **前后端分离**：Web 控制台和后端服务独立演进，可按现有基础设施灵活集成。
+- **模块化交付**：各业务服务边界清晰，支持整体部署或按场景扩展。
+- **工程化部署**：提供 Maven 与 Docker Compose 工作流，便于本地验证和容器化交付。
+- **持续更新**：SynapXnet 团队会持续完善自动化、可观测性、安全性与文档。
 
 ## 核心能力
 
@@ -85,7 +93,7 @@ mvn -DskipTests package
 
 ### 容器启动
 
-复制环境变量模板并配置数据库、Redis 及外部基础设施连接；如需同时启动 Web，请先构建同级的 `XnetAIops-web` 仓库，并确认 `WEB_DIST_PATH` 指向前端产物。
+复制环境变量模板并配置数据库、Redis、`JWT_SECRET` 及外部基础设施连接；如需同时启动 Web，请先构建同级的 `XnetAIops-web` 仓库，并确认 `WEB_DIST_PATH` 指向前端产物。
 
 ```bash
 cp .env.example .env
@@ -98,7 +106,7 @@ docker compose ps
 ## 在线体验
 
 - 访问地址：<https://www.xnetaiops.synapxnet.cn>
-- 演示手机号：`12345678900`
+- 演示手机号：`17870171303`
 - 演示验证码：`000000`
 
 固定验证码仅用于开源项目展示，不应作为生产环境认证方案。

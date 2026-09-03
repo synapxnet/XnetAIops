@@ -1,24 +1,24 @@
 package com.synapxnet.aiopsusrservice.service.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.synapxnet.aiopsusrservice.entity.User;
+import com.synapxnet.aiopsusrservice.mapper.RoleMapper;
 import com.synapxnet.aiopsusrservice.mapper.UserMapper;
 import com.synapxnet.aiopsusrservice.security.jwt.JwtUtil;
 import com.synapxnet.aiopsusrservice.service.AuthService;
-import com.synapxnet.aiopsusrservice.service.SMSCodeService;
 import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
 public class AuthServiceImpl implements AuthService {
 
+    private static final Set<String> DEMO_PHONES = Set.of("17870171303", "15870171303");
+    private static final String DEMO_VERIFICATION_CODE = "000000";
+
+    private final RoleMapper roleMapper;
     private final UserMapper userMapper;
 
     @Resource
@@ -27,72 +27,29 @@ public class AuthServiceImpl implements AuthService {
     @Resource
     private JwtUtil jwtUtil;
 
-    @Value("${Apps.Name}")
-    private String appName;
-
-    public AuthServiceImpl(UserMapper userMapper) {
+    public AuthServiceImpl(RoleMapper roleMapper, UserMapper userMapper) {
+        this.roleMapper = roleMapper;
         this.userMapper = userMapper;
     }
 
     @Override
     public Map<String, Object> sendSmsCode(String userPhone) {
+        if (!DEMO_PHONES.contains(userPhone)) {
+            throw new IllegalArgumentException("展示版仅支持已配置账号");
+        }
+
         User user = userMapper.findByPhone(userPhone);
         if (user == null) {
             throw new IllegalArgumentException("User not found");
         }
-
-        // 生成6位随机验证码
-        String verificationCode = String.format("%06d", new SecureRandom().nextInt(999999));
-
-        // 存储验证码到Redis，5分钟有效
-        stringRedisTemplate.opsForValue().set(
-                "code:" + userPhone,
-                verificationCode,
-                5, TimeUnit.MINUTES
-        );
-
-        // 通过SMS服务发送验证码
-        try {
-            String[] params = {
-                    appName,
-                    verificationCode,
-                    "5",
-                    userPhone
-            };
-            String smsResponse = SMSCodeService.SMSCodeSend(params);
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, Object> smsResult = objectMapper.readValue(
-                    smsResponse,
-                    new TypeReference<Map<String, Object>>() {}
-            );
-
-            Integer smsCode = (Integer) smsResult.get("code");
-            if (smsCode != null && smsCode == 200) {
-                String requestId = (String) smsResult.get("request_id");
-                Map<String, Object> result = new HashMap<>();
-                result.put("sms_request_id", requestId);
-                return result;
-            } else {
-                String smsMsg = (String) smsResult.get("msg");
-                throw new RuntimeException("短信发送失败: " + smsMsg);
-            }
-        } catch (IllegalArgumentException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException("短信发送失败: " + e.getMessage());
-        }
+        return Map.of("demo", true);
     }
 
     @Override
     public Map<String, Object> login(String userPhone, String code) {
-        // 从Redis获取存储的验证码
-        String storedCode = stringRedisTemplate.opsForValue().get("code:" + userPhone);
-        if (storedCode == null || !storedCode.equals(code)) {
-            throw new IllegalArgumentException("验证码错误或已过期");
+        if (!DEMO_PHONES.contains(userPhone) || !DEMO_VERIFICATION_CODE.equals(code)) {
+            throw new IllegalArgumentException("手机号或验证码错误");
         }
-        // 验证成功后删除验证码（一次性使用）
-        stringRedisTemplate.delete("code:" + userPhone);
 
         User user = userMapper.findByPhone(userPhone);
         if (user == null) {
@@ -145,7 +102,7 @@ public class AuthServiceImpl implements AuthService {
         info.put("username", user.getUsername());
         info.put("realName", user.getUsername());
         info.put("userType", user.getUserType());
-        info.put("roles", List.of(user.getUserType()));
+        info.put("roles", resolveRoleCodes(user));
         info.put("avatar", "");
         info.put("homePath", "/dashboard/overview");
         info.put("desc", "");
@@ -160,10 +117,26 @@ public class AuthServiceImpl implements AuthService {
         if (user == null) {
             throw new IllegalArgumentException("Invalid or expired token");
         }
-        if ("admin".equals(user.getUserType())) {
+        List<String> roleCodes = resolveRoleCodes(user);
+        if ("admin".equals(user.getUserType()) || roleCodes.contains("ADMIN")) {
             return List.of("AC_100100", "AC_100110", "AC_100120", "AC_100010");
         }
-        return List.of("AC_100100");
+        return roleCodes.isEmpty() ? List.of() : List.of("AC_100100");
+    }
+
+    /**
+     * 返回数据库中明确分配给用户的角色编码，不存在映射时保持空权限。
+     *
+     * @param user 当前登录用户
+     * @return 当前用户的有效角色编码
+     */
+    private List<String> resolveRoleCodes(User user) {
+        List<String> roleCodes = roleMapper.findByUserId(user.getId()).stream()
+                .map(mapping -> mapping.getRoleCode())
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        return roleCodes;
     }
 
     private String extractPhoneFromToken(String token) {
