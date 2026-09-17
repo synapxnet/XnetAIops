@@ -15,13 +15,13 @@
 
 ## GOAI 决赛版 · v1.3.0
 
-[发布页与校验文件](https://github.com/synapxnet/XnetAIops/releases/tag/v1.3.0) · [下载源码 ZIP](https://github.com/synapxnet/XnetAIops/releases/download/v1.3.0/XnetAIops-v1.3.0-0ccbeab1-source.zip) · [查看 v1.3.0 源码](https://github.com/synapxnet/XnetAIops/tree/v1.3.0) · [配套前端 XnetAIops-web](https://github.com/synapxnet/XnetAIops-web/releases/tag/v1.3.0) · [OpenXnet 桌面安装包](https://github.com/synapxnet/OpenXnet/releases/tag/v1.3.0)
+[发布页与校验文件](https://github.com/synapxnet/XnetAIops/releases/tag/v1.3.0) · [下载源码 ZIP](https://github.com/synapxnet/XnetAIops/releases/download/v1.3.0/XnetAIops-v1.3.0-source.zip) · [查看 v1.3.0 源码](https://github.com/synapxnet/XnetAIops/tree/v1.3.0) · [配套前端 XnetAIops-web](https://github.com/synapxnet/XnetAIops-web/releases/tag/v1.3.0) · [OpenXnet 桌面安装包](https://github.com/synapxnet/OpenXnet/releases/tag/v1.3.0)
 
-> GOAI 产品版本为 **v1.3.0**。固定标签和发布附件对应正式交付；此后的 README 更新不会改变已发布制品。
+> GOAI 产品版本为 **v1.3.0**。上方标签与对应源码 ZIP 提供本版源码和使用说明；程序构建与验收基线见交付文档。
 
 平台驻场 Agent 提供运维专业证据，由 OpenXnet 与 AgentTeams 组织跨域协作。后端以审批核验、资源版本、幂等与持久检查点约束受控执行，读取服务与执行服务分离。
 
-部署依赖、实测结果和能力边界见[本仓源码交付与构建说明](./docs/GOAI-FINALS-V1.3.0-SOURCE-DELIVERY.md)。发布源码不代表线上服务已重新部署。
+部署依赖、实测结果和能力边界见[程序验证基线、构建与交付说明](./docs/GOAI-FINALS-V1.3.0-SOURCE-DELIVERY.md)。发布源码不代表线上服务已重新部署。
 
 > 下方为历史界面截图，仅用于了解原有功能与布局，不作为 v1.3.0 新界面的验收证据。
 
