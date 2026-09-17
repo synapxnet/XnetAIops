@@ -6,7 +6,7 @@
 
 **面向基础设施、服务与 Kubernetes 的智能运维平台**
 
-[![Version](https://img.shields.io/badge/version-1.0.0-1677ff.svg)](https://www.xnetaiops.synapxnet.cn)
+[![GOAI release](https://img.shields.io/badge/GOAI%20release-1.3.0-1677ff.svg)](https://github.com/synapxnet/XnetAIops/releases/tag/v1.3.0)
 [![Java](https://img.shields.io/badge/Java-17-e76f00.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.6-6db33f.svg)](https://spring.io/projects/spring-boot)
 [![License](https://img.shields.io/badge/license-MIT-2ea44f.svg)](./LICENSE)
@@ -14,6 +14,18 @@
 [在线体验](https://www.xnetaiops.synapxnet.cn) · [前端仓库 XnetAIops-web](https://github.com/synapxnet/XnetAIops-web) · [OpenXnet 开源社区](https://openxnet.synapxnet.com) · [查看许可](./LICENSE)
 
 </div>
+
+## GOAI 决赛版 · v1.3.0
+
+[发布页与校验文件](https://github.com/synapxnet/XnetAIops/releases/tag/v1.3.0) · [下载源码 ZIP](https://github.com/synapxnet/XnetAIops/releases/download/v1.3.0/XnetAIops-v1.3.0-0ccbeab1-source.zip) · [查看 v1.3.0 源码](https://github.com/synapxnet/XnetAIops/tree/v1.3.0) · [配套前端 XnetAIops-web](https://github.com/synapxnet/XnetAIops-web/releases/tag/v1.3.0) · [OpenXnet 桌面安装包](https://github.com/synapxnet/OpenXnet/releases/tag/v1.3.0)
+
+> 当前默认 `display` 分支保留历史代码。徽章表示已公开的 GOAI 版本；复现 v1.3.0 请使用上方固定标签或发布附件，不以此分支代码代替。
+
+平台驻场 Agent 提供运维专业证据，由 OpenXnet 与 AgentTeams 组织跨域协作。后端以审批核验、资源版本、幂等与持久检查点约束受控执行，读取服务与执行服务分离。
+
+部署依赖、实测结果和能力边界见[本仓源码交付与构建说明](https://github.com/synapxnet/XnetAIops/blob/0ccbeab11ea0903c9e1eec55ad36543f726d56e6/docs/GOAI-FINALS-V1.3.0-SOURCE-DELIVERY.md)。发布源码不代表线上服务已重新部署。
+
+> 下方为历史界面截图，仅用于了解原有功能与布局，不作为 v1.3.0 新界面的验收证据。
 
 ![XnetAIops 集群 3D 概览](./docs/images/xnetaiops-overview-2026.png)
 
