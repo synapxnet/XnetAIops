@@ -11,7 +11,7 @@
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.6-6db33f.svg)](https://spring.io/projects/spring-boot)
 [![License](https://img.shields.io/badge/license-MIT-2ea44f.svg)](./LICENSE)
 
-[Live Demo](https://www.xnetaiops.synapxnet.cn) · [Frontend: XnetAIops-web](https://github.com/synapxnet/XnetAIops-web) · [OpenXnet](https://openxnet.synapxnet.com) · [License](./LICENSE)
+[Live Demo](https://goai.xnetaiops.synapxnet.online) · [Frontend: XnetAIops-web](https://github.com/synapxnet/XnetAIops-web/tree/v1.3.0) · [OpenXnet](https://openxnet.synapxnet.com) · [License](./LICENSE)
 
 </div>
 
@@ -49,7 +49,7 @@ See [source delivery, setup and actual test results](https://github.com/synapxne
 
 XnetAIops is an open-source operations platform maintained by the **SynapXnet team**. It brings servers, middleware, services, Kubernetes clusters, observability, and image registries into one operational workspace.
 
-This repository contains the backend. Together with [XnetAIops-web](https://github.com/synapxnet/XnetAIops-web), it forms an enterprise-grade, multi-tenant, frontend/backend-separated system. Its modular microservices can be adopted as a complete platform or integrated by domain.
+This repository contains the backend. Together with [XnetAIops-web](https://github.com/synapxnet/XnetAIops-web/tree/v1.3.0), it forms an enterprise-grade, multi-tenant, frontend/backend-separated system. Its modular microservices can be adopted as a complete platform or integrated by domain.
 
 ## Why XnetAIops
 
@@ -71,26 +71,38 @@ This repository contains the backend. Together with [XnetAIops-web](https://gith
 | REG | `aiops-reg-service` | Registries, projects, repositories, tags, replication, and deployment history |
 | USR | `aiops-usr-service` | Authentication, users, roles, and platform access control |
 
-## Quick Start
+## Get and Build v1.3.0
 
-Requirements: JDK 17+, Maven 3.9+, Docker Compose, MySQL 8.x, and Redis 7.x.
+Use JDK 17, Maven 3.9, MySQL 8.x and Redis 7.x. The backend uses Spring Boot 3.4.6 and MyBatis. Select the fixed GOAI tag instead of the historical default `display` branch:
 
 ```bash
-mvn -DskipTests package
-cp .env.example .env
-docker compose up -d --build
-docker compose ps
+git clone --branch v1.3.0 --depth 1 https://github.com/synapxnet/XnetAIops.git
+cd XnetAIops
+mvn -B -DskipTests package
 ```
 
-The optional showcase dataset is in `sql/xnet_aiops_demo.sql`. It uses non-routable addresses and placeholder credentials, and can be safely re-applied without overwriting user-created records.
+Artifacts are module `target/*-1.3.0.jar` files. This command builds only; use the delivery notes for tests, skips and limits.
+
+### Deployment prerequisites
+
+- Provide external MySQL and Redis. Review `XnetAIops.sql`, K8s/DevOps tables and `database/migrations` against the target database; back up before initialization or migration. A fully initialized database image is not included.
+- Copy `.env.example` to `.env` and configure database/Redis access and `K8S_ENCRYPTION_KEY`. USR also requires `JWT_SECRET`; generic Compose does not pass it, so supply it to `aiops-usr-service` through an override or existing orchestration. Copying `.env` alone is insufficient.
+- Build the companion frontend at `v1.3.0`; point `WEB_DIST_PATH` at `apps/web-antd/dist`. Generic Web port is `81`; internal USR is `9185`, with CLM/HOM/SVM/MON/K8S/REG on `9181/9182/9183/9184/9186/9187`. Public access uses the HTTPS gateway.
+- Generic Compose excludes the independent resident Agent, AgentTeams, approval service and reader/checkpoint separation. Deploy the pinned OpenXnet resident service separately and route `/api/resident/v1/` through the gateway. A single generic Compose command does not reproduce the complete finals environment.
+
+After configuration, run `docker compose up -d --build` and `docker compose ps` in an isolated environment. Do not overwrite an existing competition deployment with generic Compose.
 
 ## Demo Access
 
-- URL: <https://www.xnetaiops.synapxnet.cn>
-- Phone: `12345678900`
-- Verification code: `000000`
+- Current GOAI entry: <https://goai.xnetaiops.synapxnet.online/#/auth/login>.
+- Demo phone: `17870171303`; demo verification code: `000000` (six digits, demo environment only).
+- Sign in with a phone number and code, not the OpenXnet desktop password. This screen does not send SMS; the project supplies the demo code.
+- Verified on 2026-09-18: login as `goai_operator` / `OPERATOR`; page title `XnetAIops`; resident status `platform=aiops`, `agentVersion=1.3.0`, `ONLINE`.
+- This code is separate from an AgentTeams demo access code, Live execution authorization and model API keys. Those credentials are not interchangeable and are not published here.
 
-The fixed verification code is for the public showcase only. Production deployments must use a secure authentication provider.
+The same-origin API gateway is `https://goai.xnetaiops.synapxnet.online`. Login: `POST /api/usr/login`; identity: `GET /api/usr/user/info`; resident status: `GET /api/resident/v1/status`. The last two require the platform Bearer token. Business prefixes are `/api/clm`, `/api/hom`, `/api/svm`, `/api/mon`, `/api/k8s` and `/api/reg`.
+
+This check performed login and read-only identity/resident requests, without business changes or model calls. `modelConfigured=true` means configuration exists, not that inference was tested. Public demo authentication must not be used for production.
 
 ## Community and License
 

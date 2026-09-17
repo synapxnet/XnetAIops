@@ -11,7 +11,7 @@
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.6-6db33f.svg)](https://spring.io/projects/spring-boot)
 [![License](https://img.shields.io/badge/license-MIT-2ea44f.svg)](./LICENSE)
 
-[オンラインデモ](https://www.xnetaiops.synapxnet.cn) · [フロントエンド: XnetAIops-web](https://github.com/synapxnet/XnetAIops-web) · [OpenXnet](https://openxnet.synapxnet.com) · [ライセンス](./LICENSE)
+[オンラインデモ](https://goai.xnetaiops.synapxnet.online) · [フロントエンド: XnetAIops-web](https://github.com/synapxnet/XnetAIops-web/tree/v1.3.0) · [OpenXnet](https://openxnet.synapxnet.com) · [ライセンス](./LICENSE)
 
 </div>
 
@@ -49,7 +49,7 @@
 
 XnetAIops は **SynapXnet チーム**が開発・公開する運用管理プラットフォームです。サーバー、ミドルウェア、業務サービス、Kubernetes、監視、イメージレジストリを一つのワークスペースで管理できます。
 
-本リポジトリはバックエンドです。[XnetAIops-web](https://github.com/synapxnet/XnetAIops-web) と組み合わせることで、企業向けのマルチテナント、フロントエンド・バックエンド分離システムを構成します。
+本リポジトリはバックエンドです。[XnetAIops-web](https://github.com/synapxnet/XnetAIops-web/tree/v1.3.0) と組み合わせることで、企業向けのマルチテナント、フロントエンド・バックエンド分離システムを構成します。
 
 ## 特長
 
@@ -71,26 +71,38 @@ XnetAIops は **SynapXnet チーム**が開発・公開する運用管理プラ�
 | REG | `aiops-reg-service` | レジストリ、プロジェクト、タグ、同期、配備履歴 |
 | USR | `aiops-usr-service` | 認証、ユーザー、ロール、アクセス制御 |
 
-## クイックスタート
+## v1.3.0 の取得とビルド
 
-JDK 17+、Maven 3.9+、Docker Compose、MySQL 8.x、Redis 7.x が必要です。
+JDK 17、Maven 3.9、MySQL 8.x、Redis 7.x を使用します。バックエンドは Spring Boot 3.4.6 と MyBatis です。過去の `display` ではなく固定 GOAI タグを取得してください。
 
 ```bash
-mvn -DskipTests package
-cp .env.example .env
-docker compose up -d --build
-docker compose ps
+git clone --branch v1.3.0 --depth 1 https://github.com/synapxnet/XnetAIops.git
+cd XnetAIops
+mvn -B -DskipTests package
 ```
 
-演示用データは `sql/xnet_aiops_demo.sql` にあります。到達不能なデモ用アドレスと無効なプレースホルダー認証情報のみを使用し、ユーザー作成データを上書きせず再実行できます。
+成果物は各モジュールの `target/*-1.3.0.jar` です。このコマンドはビルドのみです。テストと制限は配布説明を参照してください。
 
-## デモ
+### 配備の前提
 
-- URL: <https://www.xnetaiops.synapxnet.cn>
-- 電話番号: `12345678900`
-- 確認コード: `000000`
+- 外部 MySQL と Redis を用意し、`XnetAIops.sql`、K8s/DevOps テーブル、`database/migrations` を既存状態と照合して、バックアップ後に必要な初期化・移行を行います。初期化済み DB イメージは同梱しません。
+- `.env.example` から DB、Redis、`K8S_ENCRYPTION_KEY` の設定を作成します。USR の `JWT_SECRET` は汎用 Compose では渡されないため、専用 override などで `aiops-usr-service` へ注入してください。`.env` のコピーだけでは不十分です。
+- 対応フロントエンドも `v1.3.0` でビルドし、`WEB_DIST_PATH` を `apps/web-antd/dist` へ設定します。Web は `81`、内部 USR は `9185`、CLM/HOM/SVM/MON/K8S/REG は `9181/9182/9183/9184/9186/9187` です。公開アクセスには HTTPS ゲートウェイを使用します。
+- 汎用 Compose には常駐 Agent、AgentTeams、承認サービス、reader/checkpoint の分離配備は含まれません。固定版 OpenXnet の常駐サービスを別途配備し、`/api/resident/v1/` を転送します。完全な決勝環境は Compose 一行だけでは再現できません。
 
-固定確認コードは公開デモ専用です。本番環境では安全な認証プロバイダーを利用してください。
+設定後、隔離環境で `docker compose up -d --build` と `docker compose ps` を実行します。既存の大会環境を汎用設定で上書きしないでください。
+
+## デモへのアクセス
+
+- 現在の GOAI 入口: <https://goai.xnetaiops.synapxnet.online/#/auth/login>。
+- デモ電話番号: `17870171303`。確認コード: `000000`（6 桁、このデモ環境専用）。
+- 電話番号と確認コードでログインします。OpenXnet デスクトップのパスワードではありません。この画面は SMS を送信せず、コードはプロジェクトから提供されます。
+- 2026-09-18 の確認結果: `goai_operator` / `OPERATOR` でログイン成功。ページ名は `XnetAIops`、常駐 Agent は `platform=aiops`、`agentVersion=1.3.0`、`ONLINE`。
+- このコードはログイン専用です。AgentTeams デモアクセスコード、Live 実行承認、モデル API キーとは別であり、後者は公開しません。
+
+API ゲートウェイは同一オリジンの `https://goai.xnetaiops.synapxnet.online` です。ログインは `POST /api/usr/login`、身元確認は `GET /api/usr/user/info`、常駐状態は `GET /api/resident/v1/status`。後二者にはプラットフォームの Bearer トークンが必要です。業務の接頭辞は `/api/clm`、`/api/hom`、`/api/svm`、`/api/mon`、`/api/k8s`、`/api/reg` です。
+
+今回確認したのはログインと読み取り専用の身元・常駐状態です。業務変更やモデル呼び出しは行っていません。`modelConfigured=true` は設定の存在を示し、推論の検証結果ではありません。公開デモの認証を本番環境で使用しないでください。
 
 ## コミュニティとライセンス
 
