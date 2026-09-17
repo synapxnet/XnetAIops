@@ -1,6 +1,6 @@
 FROM eclipse-temurin:17-jdk-slim
 WORKDIR /app
-COPY target/aiops-usr-service-1.0.0-SNAPSHOT.jar app.jar
+COPY target/aiops-usr-service-1.3.0.jar app.jar
 EXPOSE 9185
 ENV TZ=Asia/Shanghai
 ENV JAVA_OPTS="-Xms256m -Xmx512m"

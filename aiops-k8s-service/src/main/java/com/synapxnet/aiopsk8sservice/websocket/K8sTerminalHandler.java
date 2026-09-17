@@ -16,10 +16,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.socket.SubProtocolCapable;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-public class K8sTerminalHandler extends TextWebSocketHandler {
+public class K8sTerminalHandler extends TextWebSocketHandler implements SubProtocolCapable {
 
     private static final Logger log = LoggerFactory.getLogger(K8sTerminalHandler.class);
 
@@ -30,9 +33,20 @@ public class K8sTerminalHandler extends TextWebSocketHandler {
         this.clientFactory = clientFactory;
     }
 
+    /** 只协商固定协议，不回显票据子协议。Negotiate the fixed protocol without echoing the ticket subprotocol. */
+    @Override
+    public List<String> getSubProtocols() { return List.of("synapxnet-terminal"); }
+
+    /** 执行前检查握手授权与资源路径，任何绕过都失败关闭。Verify trusted handshake authorization and the target path before execution, failing closed on bypasses. */
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         String path = session.getUri().getPath();
+        Object value = session.getAttributes().get(TerminalAccessService.ATTRIBUTE);
+        if (!(value instanceof TerminalAccessService.AuthorizedTerminal authorized) || !authorized.target().path().equals(path)) {
+            session.close(CloseStatus.POLICY_VIOLATION);
+            return;
+        }
+        log.info("terminal session opened audit={} user={} workspace={} target={}", authorized.auditId(), authorized.userId(), authorized.workspaceId(), path);
         log.info("WebSocket terminal connection established: {}", path);
 
         // Parse path: /ws/terminal/{clusterId}/{namespace}/{podName}/{containerName}
@@ -74,7 +88,7 @@ public class K8sTerminalHandler extends TextWebSocketHandler {
                         public void onFailure(Throwable t, Response failureResponse) {
                             log.error("Exec session failed for pod {}/{}: {}", namespace, podName, t.getMessage());
                             try {
-                                session.sendMessage(new TextMessage("\r\nConnection failed: " + t.getMessage() + "\r\n"));
+                                session.sendMessage(new TextMessage("\r\n容器终端连接失败，请检查授权目标与集群状态。\r\n"));
                                 session.close();
                             } catch (IOException e) {
                                 log.error("Error sending failure message", e);
@@ -142,20 +156,28 @@ public class K8sTerminalHandler extends TextWebSocketHandler {
             session.close();
         } catch (Exception e) {
             log.error("Failed to establish terminal session", e);
-            session.sendMessage(new TextMessage("Failed to connect: " + e.getMessage()));
+            session.sendMessage(new TextMessage("容器终端暂不可连接，请检查集群与容器状态。"));
             session.close();
         }
     }
 
+    /** 仅向已授权会话写入有界输入，并实际调整PTY尺寸。Write bounded input only to authorized sessions and actually resize the PTY. */
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        if (!(session.getAttributes().get(TerminalAccessService.ATTRIBUTE) instanceof TerminalAccessService.AuthorizedTerminal) || message.getPayloadLength() > 32768) {
+            session.close(CloseStatus.POLICY_VIOLATION); return;
+        }
         ExecWatch execWatch = execWatches.get(session.getId());
         if (execWatch != null) {
             try {
                 String payload = message.getPayload();
                 // Handle resize message
                 if (payload.startsWith("{\"type\":\"resize\"")) {
-                    // Resize is handled by xterm.js fit addon on frontend
+                    var dimensions = new ObjectMapper().readTree(payload);
+                    int cols = dimensions.path("cols").asInt(0);
+                    int rows = dimensions.path("rows").asInt(0);
+                    if (cols < 1 || cols > 400 || rows < 1 || rows > 200) { session.close(CloseStatus.POLICY_VIOLATION); return; }
+                    execWatch.resize(cols, rows);
                     return;
                 }
                 OutputStream inputStream = execWatch.getInput();

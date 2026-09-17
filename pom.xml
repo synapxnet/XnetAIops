@@ -6,12 +6,13 @@
 
     <groupId>com.synapxnet</groupId>
     <artifactId>aiops-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.3.0</version>
     <packaging>pom</packaging>
     <name>AIOps Parent</name>
     <description>Parent POM for XnetAIops intelligent operations platform</description>
 
     <modules>
+        <module>aiops-agent-contract</module>
         <module>aiops-clm-service</module>
         <module>aiops-hom-service</module>
         <module>aiops-svm-service</module>
@@ -73,6 +74,15 @@
     <build>
         <pluginManagement>
             <plugins>
+                <!-- 共享契约变化后仍重新打包，避免 Spring Boot 沿用旧嵌套依赖。 Rebuild archives when shared contracts change so Spring Boot cannot retain stale nested dependencies. -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.4.1</version>
+                    <configuration>
+                        <forceCreation>true</forceCreation>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>

@@ -3,6 +3,9 @@
 -- Database: XnetAIops
 -- ============================================================
 
+-- 明确 SQL 输入编码，避免内置角色与中文说明按 latin1 导入。 Declare UTF-8 for seed input so Chinese role labels are not imported as latin1.
+SET NAMES utf8mb4;
+
 CREATE DATABASE IF NOT EXISTS XnetAIops DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE XnetAIops;
 

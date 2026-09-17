@@ -150,6 +150,7 @@ public class K8sNamespaceServiceImpl implements K8sNamespaceService {
     }
 
     @Override
+    /** 读取配额与已用量时保留全部原始数量单位。 Reads quota limits and usage with their complete original quantity units. */
     public List<Map<String, Object>> getResourceQuotas(Long clusterId, String namespace) {
         KubernetesClient client = clientFactory.getClient(clusterId);
         List<ResourceQuota> quotas = client.resourceQuotas().inNamespace(namespace).list().getItems();
@@ -159,12 +160,12 @@ public class K8sNamespaceServiceImpl implements K8sNamespaceService {
             map.put("createdAt", rq.getMetadata().getCreationTimestamp());
             if (rq.getSpec() != null && rq.getSpec().getHard() != null) {
                 Map<String, String> hard = new HashMap<>();
-                rq.getSpec().getHard().forEach((k, v) -> hard.put(k, v.getAmount()));
+                rq.getSpec().getHard().forEach((k, v) -> hard.put(k, v.toString()));
                 map.put("hard", hard);
             }
             if (rq.getStatus() != null && rq.getStatus().getUsed() != null) {
                 Map<String, String> used = new HashMap<>();
-                rq.getStatus().getUsed().forEach((k, v) -> used.put(k, v.getAmount()));
+                rq.getStatus().getUsed().forEach((k, v) -> used.put(k, v.toString()));
                 map.put("used", used);
             }
             return map;

@@ -1,1 +1,14 @@
 .env
+
+# Local build outputs and private runtime state / 本机构建产物与私有运行状态
+**/target/
+**/.idea/
+**/node_modules/
+*.log
+*.jar
+*.class
+*.zip
+**/checkpoint.json
+**/initialized.json
+**/*.consumed
+.env.*.local
