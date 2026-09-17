@@ -17,13 +17,13 @@
 
 ## GOAI 決勝版 · v1.3.0
 
-[リリース・チェックサム](https://github.com/synapxnet/XnetAIops/releases/tag/v1.3.0) · [ソース ZIP](https://github.com/synapxnet/XnetAIops/releases/download/v1.3.0/XnetAIops-v1.3.0-0ccbeab1-source.zip) · [v1.3.0 ソース](https://github.com/synapxnet/XnetAIops/tree/v1.3.0) · [対応する XnetAIops-web](https://github.com/synapxnet/XnetAIops-web/releases/tag/v1.3.0) · [OpenXnet デスクトップ](https://github.com/synapxnet/OpenXnet/releases/tag/v1.3.0)
+[リリース・チェックサム](https://github.com/synapxnet/XnetAIops/releases/tag/v1.3.0) · [ソース ZIP](https://github.com/synapxnet/XnetAIops/releases/download/v1.3.0/XnetAIops-v1.3.0-source.zip) · [v1.3.0 ソース](https://github.com/synapxnet/XnetAIops/tree/v1.3.0) · [対応する XnetAIops-web](https://github.com/synapxnet/XnetAIops-web/releases/tag/v1.3.0) · [OpenXnet デスクトップ](https://github.com/synapxnet/OpenXnet/releases/tag/v1.3.0)
 
 > 既定の `display` ブランチには過去のコードが残っています。バッジは GOAI リリースを示します。v1.3.0 の利用にはタグまたはリリース添付ファイルを選択してください。
 
 プラットフォーム常駐 Agent がインフラの証拠を提供し、OpenXnet と AgentTeams が共同作業を調整します。承認検証、リソース版、冪等性、チェックポイントで実行境界を管理し、読み取りサービスと実行サービスを分離します。
 
-依存関係、検証結果、制限は[ソース配布・構築の説明](https://github.com/synapxnet/XnetAIops/blob/0ccbeab11ea0903c9e1eec55ad36543f726d56e6/docs/GOAI-FINALS-V1.3.0-SOURCE-DELIVERY.md)を参照してください。この公開はオンライン環境の再デプロイを意味しません。
+依存関係、検証結果、制限は[プログラム検証基準・構築・配布の説明](https://github.com/synapxnet/XnetAIops/blob/0ccbeab11ea0903c9e1eec55ad36543f726d56e6/docs/GOAI-FINALS-V1.3.0-SOURCE-DELIVERY.md)を参照してください。この公開はオンライン環境の再デプロイを意味しません。
 
 > 以下は旧版の画面例です。v1.3.0 の UI 検証画像ではありません。
 
