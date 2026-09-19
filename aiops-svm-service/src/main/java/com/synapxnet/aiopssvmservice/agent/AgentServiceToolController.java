@@ -13,6 +13,7 @@ import com.synapxnet.aiopssvmservice.entity.RoleInstance;
 import com.synapxnet.aiopssvmservice.entity.ServiceInstance;
 import com.synapxnet.aiopssvmservice.service.ServiceInstanceService;
 import com.synapxnet.goai.contract.AgentContract;
+import com.synapxnet.goai.contract.FeatureDriftRuntimeClient;
 import com.synapxnet.goai.contract.OperationsReadAccess;
 import com.synapxnet.goai.contract.AgentContractException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,10 +33,26 @@ import java.util.Map;
  */
 @RestController
 public class AgentServiceToolController {
+    // 仅启用的真实运行时分流，缺失响应不得回退。 Route only enabled real execution; never fall back on missing evidence.
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private FeatureDriftRuntimeClient featureDriftRuntime;
+
 
     private static final String TOOL_NAME = "aiops.service.health";
     private final ServiceInstanceService serviceInstanceService;
     private final OperationsReadAccess access;
+
+    /** 保留权限与运行时错误的真实HTTP状态和审计上下文。 / Preserve actual HTTP status and audit context for authorization and runtime errors. */
+    @org.springframework.web.bind.annotation.ExceptionHandler(AgentContractException.class)
+    public org.springframework.http.ResponseEntity<AgentContract.ToolResponse<Void>> contractFailure(AgentContractException error, HttpServletRequest request) {
+        Object value = request.getAttribute(AgentContract.CONTEXT_ATTRIBUTE);
+        AgentContract.RequestContext context = value instanceof AgentContract.RequestContext trusted ? trusted : null;
+        AgentContract.ToolMeta meta = new AgentContract.ToolMeta(context == null ? null : context.requestId(), context == null ? null : context.workspaceId(),
+                context == null ? null : context.incidentId(), context == null ? null : context.traceId(), context == null ? null : context.toolName(),
+                AgentContract.CONTRACT_VERSION, Instant.now(), 0L, "XnetAIops/svm", null, null);
+        return org.springframework.http.ResponseEntity.status(error.getHttpStatus()).body(new AgentContract.ToolResponse<>(false, null,
+                new AgentContract.ToolError(error.getCode(), error.getMessage(), error.isRetryable(), error.getDetails()), meta, null));
+    }
 
     /**
      * 创建服务健康工具 Controller。
@@ -65,6 +82,9 @@ public class AgentServiceToolController {
             HttpServletRequest servletRequest) {
         long startedNanos = System.nanoTime();
         AgentContract.RequestContext context = AgentContract.requireContext(servletRequest, TOOL_NAME, body);
+        if (featureDriftRuntime != null && featureDriftRuntime.handles(context.toolName(), body.arguments())) {
+            return featureDriftRuntime.invoke(body, context);
+        }
         ServiceHealthArguments arguments = requireArguments(body.arguments());
         access.requireAgentResource(context.workspaceId(), "service", arguments.serviceUid());
         ServiceHealthEvidence evidence = read(arguments.serviceUid());

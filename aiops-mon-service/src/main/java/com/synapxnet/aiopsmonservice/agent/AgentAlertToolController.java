@@ -12,6 +12,7 @@ package com.synapxnet.aiopsmonservice.agent;
 import com.synapxnet.aiopsmonservice.entity.AlertHistory;
 import com.synapxnet.aiopsmonservice.service.AlertHistoryService;
 import com.synapxnet.goai.contract.AgentContract;
+import com.synapxnet.goai.contract.FeatureDriftRuntimeClient;
 import com.synapxnet.goai.contract.OperationsReadAccess;
 import com.synapxnet.goai.contract.AgentContractException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,11 +28,27 @@ import java.time.Instant;
  */
 @RestController
 public class AgentAlertToolController {
+    // 仅启用的真实运行时分流，缺失响应不得回退。 Route only enabled real execution; never fall back on missing evidence.
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private FeatureDriftRuntimeClient featureDriftRuntime;
+
 
     private static final String TOOL_NAME = "aiops.alert.get";
     private final OperationsReadAccess access;
     private final AlertHistoryService alertHistoryService;
     private final AlertEvidenceAssembler evidenceAssembler;
+
+    /** 保留权限与运行时错误的真实HTTP状态和审计上下文。 / Preserve actual HTTP status and audit context for authorization and runtime errors. */
+    @org.springframework.web.bind.annotation.ExceptionHandler(AgentContractException.class)
+    public org.springframework.http.ResponseEntity<AgentContract.ToolResponse<Void>> contractFailure(AgentContractException error, HttpServletRequest request) {
+        Object value = request.getAttribute(AgentContract.CONTEXT_ATTRIBUTE);
+        AgentContract.RequestContext context = value instanceof AgentContract.RequestContext trusted ? trusted : null;
+        AgentContract.ToolMeta meta = new AgentContract.ToolMeta(context == null ? null : context.requestId(), context == null ? null : context.workspaceId(),
+                context == null ? null : context.incidentId(), context == null ? null : context.traceId(), context == null ? null : context.toolName(),
+                AgentContract.CONTRACT_VERSION, Instant.now(), 0L, "XnetAIops/mon", null, null);
+        return org.springframework.http.ResponseEntity.status(error.getHttpStatus()).body(new AgentContract.ToolResponse<>(false, null,
+                new AgentContract.ToolError(error.getCode(), error.getMessage(), error.isRetryable(), error.getDetails()), meta, null));
+    }
 
     /**
      * 创建告警证据工具 Controller。
@@ -62,6 +79,9 @@ public class AgentAlertToolController {
             HttpServletRequest servletRequest) {
         long startedNanos = System.nanoTime();
         AgentContract.RequestContext context = AgentContract.requireContext(servletRequest, TOOL_NAME, body);
+        if (featureDriftRuntime != null && featureDriftRuntime.handles(context.toolName(), body.arguments())) {
+            return featureDriftRuntime.invoke(body, context);
+        }
         AlertGetArguments arguments = requireArguments(body.arguments());
         if (arguments.alertUid() == null) {
             throw new AgentContractException(403, "PERMISSION_DENIED", "Agent取证需要明确授权的稳定告警UID");

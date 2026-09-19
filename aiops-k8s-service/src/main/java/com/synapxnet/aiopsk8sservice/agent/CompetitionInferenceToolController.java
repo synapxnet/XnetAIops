@@ -10,6 +10,7 @@
 package com.synapxnet.aiopsk8sservice.agent;
 
 import com.synapxnet.goai.contract.AgentContract;
+import com.synapxnet.goai.contract.FeatureDriftRuntimeClient;
 import com.synapxnet.goai.contract.AgentContractException;
 import com.synapxnet.goai.contract.GovernedApprovalVerifier;
 import com.synapxnet.goai.contract.GovernedResourceVersionTracker;
@@ -44,6 +45,10 @@ import jakarta.annotation.PreDestroy;
         havingValue = "false", matchIfMissing = true)
 @RestController
 public class CompetitionInferenceToolController implements AutoCloseable {
+    // 仅启用的真实运行时分流，缺失响应不得回退。 Route only enabled real execution; never fall back on missing evidence.
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private FeatureDriftRuntimeClient featureDriftRuntime;
+
 
     private static final String MIGRATION_SOURCE_JAR_SHA256 = "48325d55b67d06c9e9508b340c24a5839dc352f1d8c33c07a22707c3b48b7394";
     private static final String CURRENT_MIGRATION_SOURCE_JAR_SHA256 = "65d376a6f561d42360c5fdff002c8a6625c2fe560507bac6f8fe875b7b94e3c6";
@@ -338,6 +343,9 @@ public class CompetitionInferenceToolController implements AutoCloseable {
             HttpServletRequest servletRequest) {
         long startedNanos = System.nanoTime();
         AgentContract.RequestContext context = context(servletRequest, "aiops.inference.metrics.get", body);
+        if (featureDriftRuntime != null && featureDriftRuntime.handles(context.toolName(), body.arguments())) {
+            return featureDriftRuntime.invoke(body, context);
+        }
         InferenceMetricsArguments arguments = requireMetricsArguments(body.arguments());
         InferenceResourceBinding binding = InferenceResourceBinding.forRead(arguments.serviceUid(), arguments.deploymentUid());
         return memoryTransaction(() -> {
@@ -369,6 +377,9 @@ public class CompetitionInferenceToolController implements AutoCloseable {
             HttpServletRequest servletRequest) {
         long startedNanos = System.nanoTime();
         AgentContract.RequestContext context = context(servletRequest, "aiops.inference.recovery.status", body);
+        if (featureDriftRuntime != null && featureDriftRuntime.handles(context.toolName(), body.arguments())) {
+            return featureDriftRuntime.invoke(body, context);
+        }
         RecoveryStatusArguments arguments = requireRecoveryArguments(body.arguments());
         InferenceResourceBinding binding = InferenceResourceBinding.forRead(arguments.serviceUid(), arguments.deploymentUid());
         return memoryTransaction(() -> {
@@ -403,6 +414,9 @@ public class CompetitionInferenceToolController implements AutoCloseable {
             @RequestBody AgentContract.ToolRequest<GpuCapacityArguments> body,
             HttpServletRequest servletRequest) {
         AgentContract.RequestContext context = context(servletRequest, "aiops.gpu.capacity.ensure", body);
+        if (featureDriftRuntime != null && featureDriftRuntime.handles(context.toolName(), body.arguments())) {
+            return featureDriftRuntime.invoke(body, context);
+        }
         GpuCapacityArguments arguments = requireGpuArguments(body.arguments());
         return executeWrite(body, context, () -> {
             InferenceState state = state(context.workspaceId(), "service_rec_inference");
@@ -419,6 +433,9 @@ public class CompetitionInferenceToolController implements AutoCloseable {
             @RequestBody AgentContract.ToolRequest<RuntimeTuneArguments> body,
             HttpServletRequest servletRequest) {
         AgentContract.RequestContext context = context(servletRequest, "aiops.inference.runtime.tune", body);
+        if (featureDriftRuntime != null && featureDriftRuntime.handles(context.toolName(), body.arguments())) {
+            return featureDriftRuntime.invoke(body, context);
+        }
         RuntimeTuneArguments arguments = requireRuntimeArguments(body.arguments());
         return executeWrite(body, context, () -> {
             InferenceState state = state(context.workspaceId(), "service_rec_inference");
@@ -439,6 +456,9 @@ public class CompetitionInferenceToolController implements AutoCloseable {
             @RequestBody AgentContract.ToolRequest<CapacityArguments> body,
             HttpServletRequest servletRequest) {
         AgentContract.RequestContext context = context(servletRequest, "aiops.inference.capacity.apply", body);
+        if (featureDriftRuntime != null && featureDriftRuntime.handles(context.toolName(), body.arguments())) {
+            return featureDriftRuntime.invoke(body, context);
+        }
         CapacityArguments arguments = requireCapacityArguments(body.arguments());
         return executeWrite(body, context, () -> {
             InferenceState state = state(context.workspaceId(), "service_rec_inference");
@@ -456,6 +476,9 @@ public class CompetitionInferenceToolController implements AutoCloseable {
             @RequestBody AgentContract.ToolRequest<TrafficShiftArguments> body,
             HttpServletRequest servletRequest) {
         AgentContract.RequestContext context = context(servletRequest, "aiops.inference.traffic.shift", body);
+        if (featureDriftRuntime != null && featureDriftRuntime.handles(context.toolName(), body.arguments())) {
+            return featureDriftRuntime.invoke(body, context);
+        }
         TrafficShiftArguments arguments = requireTrafficArguments(body.arguments());
         return executeWrite(body, context, () -> {
             InferenceState state = state(context.workspaceId(), arguments.serviceUid());
@@ -474,6 +497,9 @@ public class CompetitionInferenceToolController implements AutoCloseable {
             HttpServletRequest servletRequest) {
         AgentContract.RequestContext context = context(
                 servletRequest, "aiops.inference.autoscaling.policy.update", body);
+        if (featureDriftRuntime != null && featureDriftRuntime.handles(context.toolName(), body.arguments())) {
+            return featureDriftRuntime.invoke(body, context);
+        }
         AutoscalingArguments arguments = requireAutoscalingArguments(body.arguments());
         return executeWrite(body, context, () -> {
             InferenceState state = state(context.workspaceId(), "service_rec_inference");
@@ -496,6 +522,9 @@ public class CompetitionInferenceToolController implements AutoCloseable {
             HttpServletRequest servletRequest) {
         AgentContract.RequestContext context = context(
                 servletRequest, "aiops.inference.capacity.converge", body);
+        if (featureDriftRuntime != null && featureDriftRuntime.handles(context.toolName(), body.arguments())) {
+            return featureDriftRuntime.invoke(body, context);
+        }
         CapacityConvergeArguments arguments = requireConvergeArguments(body.arguments());
         return executeWrite(body, context, () -> {
             InferenceState state = state(context.workspaceId(), "service_rec_inference");

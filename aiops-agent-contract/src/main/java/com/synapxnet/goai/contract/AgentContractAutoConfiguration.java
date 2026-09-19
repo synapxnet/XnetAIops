@@ -66,6 +66,7 @@ public class AgentContractAutoConfiguration {
 
     /** 注入服务器管理的授权映射，默认不开放资源。 Loads server-managed grants with no default resource access. */
     @Bean
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean(OperationsReadAccess.class)
     OperationsReadAccess operationsReadAccess(
             ObjectMapper mapper,
             @Value("${openxnet.operations.organization-access-url:}") String accessUrl,
