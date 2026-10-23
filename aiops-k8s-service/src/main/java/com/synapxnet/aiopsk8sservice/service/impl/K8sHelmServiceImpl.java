@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
 import org.yaml.snakeyaml.Yaml;
 
@@ -37,6 +38,9 @@ public class K8sHelmServiceImpl implements K8sHelmService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Yaml yaml = new Yaml();
+
+    @Value("${openxnet.k8s.ui-reader:false}")
+    private boolean uiReader;
 
     private static final int HELM_TIMEOUT = 300000; // 5 minutes
 
@@ -448,8 +452,10 @@ public class K8sHelmServiceImpl implements K8sHelmService {
 
     // ====== Releases ======
 
+    /** 独立 reader 只查看已登记版本，不经 SSH 安装 Helm 或同步部署状态。 The isolated reader lists recorded releases without installing Helm over SSH or synchronizing deployments. */
     @Override
     public List<K8sHelmRelease> listReleases(Long clusterId) {
+        if (uiReader) return releaseMapper.findByClusterId(clusterId);
         // Try to sync from cluster first, fall back to DB
         try {
             syncReleasesFromCluster(clusterId);

@@ -3,6 +3,9 @@
 -- Database: XnetAIops
 -- ============================================================
 
+-- 明确 SQL 输入编码，避免内置角色与中文说明按 latin1 导入。 Declare UTF-8 for seed input so Chinese role labels are not imported as latin1.
+SET NAMES utf8mb4;
+
 CREATE DATABASE IF NOT EXISTS XnetAIops DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE XnetAIops;
 
@@ -322,6 +325,47 @@ CREATE TABLE xnet_aiops_usr_user_role_cluster (
   UNIQUE KEY uk_user_role_cluster (user_id, role_id, cluster_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户-角色-集群映射表';
 
+CREATE TABLE xnet_aiops_sys_tenant (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  uid VARCHAR(50) NOT NULL UNIQUE,
+  tenant_name VARCHAR(100) NOT NULL,
+  status TINYINT NOT NULL DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='租户表';
+
+CREATE TABLE xnet_aiops_sys_department (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  uid VARCHAR(50) NOT NULL UNIQUE,
+  tenant_uid VARCHAR(50) NOT NULL,
+  dept_name VARCHAR(100) NOT NULL,
+  status TINYINT NOT NULL DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_aiops_department_tenant (tenant_uid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='部门表';
+
+CREATE TABLE xnet_aiops_sys_team (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  uid VARCHAR(50) NOT NULL UNIQUE,
+  dept_uid VARCHAR(50) NOT NULL,
+  team_name VARCHAR(100) NOT NULL,
+  status TINYINT NOT NULL DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_aiops_team_department (dept_uid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='团队表';
+
+CREATE TABLE xnet_aiops_usr_organization_membership (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  tenant_uid VARCHAR(50) NOT NULL,
+  dept_uid VARCHAR(50),
+  team_uid VARCHAR(50),
+  status TINYINT NOT NULL DEFAULT 1,
+  data_access_enabled TINYINT NOT NULL DEFAULT 0 COMMENT '必须显式授予团队数据访问权',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_aiops_user_organization (user_id, tenant_uid, dept_uid, team_uid),
+  INDEX idx_aiops_membership_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户组织成员关系表';
+
 CREATE TABLE xnet_aiops_usr_session (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT NOT NULL,
@@ -484,10 +528,7 @@ CREATE TABLE IF NOT EXISTS xnet_aiops_clm_jenkins_version (
 -- 初始数据
 -- ============================================================
 
-INSERT INTO xnet_aiops_usr_user (uid, username, password, user_type, status)
-VALUES (UUID(), 'admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6CQARaY1.k0YGKISbVFnTUjXS', 'admin', 'active');
--- 默认密码: password
-
+-- 主线只预置通用角色，账号与组织由管理员创建。 Seed generic roles only; administrators provision users and organizations.
 INSERT INTO xnet_aiops_usr_role (role_name, role_code, description) VALUES
 ('管理员', 'ADMIN', '系统管理员，拥有所有权限'),
 ('运维人员', 'OPERATOR', '运维操作人员，可管理集群和服务'),
@@ -792,3 +833,21 @@ CREATE TABLE xnet_aiops_reg_tag (
   FOREIGN KEY (repository_id) REFERENCES xnet_aiops_reg_repository(id) ON DELETE CASCADE,
   INDEX idx_repository_id (repository_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='镜像标签表';
+
+-- 镜像同步任务表
+CREATE TABLE xnet_aiops_reg_sync_task (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  registry_id BIGINT NOT NULL COMMENT '目标 Harbor 仓库ID',
+  source_image VARCHAR(500) NOT NULL COMMENT '源镜像地址',
+  target_project VARCHAR(200) COMMENT '目标 Harbor 项目名',
+  sync_method VARCHAR(20) NOT NULL DEFAULT 'harbor_replication' COMMENT 'harbor_replication / skopeo',
+  harbor_policy_id BIGINT COMMENT 'Harbor replication policy ID',
+  harbor_execution_id BIGINT COMMENT 'Harbor replication execution ID',
+  status VARCHAR(20) NOT NULL DEFAULT 'pending' COMMENT 'pending/running/success/failed/cancelled',
+  status_detail TEXT COMMENT '状态详情/错误信息',
+  created_by VARCHAR(100),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_registry_id (registry_id),
+  INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='镜像同步任务表';

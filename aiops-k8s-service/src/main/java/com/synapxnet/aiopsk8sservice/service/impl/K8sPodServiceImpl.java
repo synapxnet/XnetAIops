@@ -1,10 +1,12 @@
 package com.synapxnet.aiopsk8sservice.service.impl;
 
 import com.synapxnet.aiopsk8sservice.exception.K8sResourceNotFoundException;
+import com.synapxnet.aiopsk8sservice.exception.ClusterConnectionException;
 import com.synapxnet.aiopsk8sservice.service.K8sClientFactory;
 import com.synapxnet.aiopsk8sservice.service.K8sPodService;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -48,6 +50,7 @@ public class K8sPodServiceImpl implements K8sPodService {
         return pods.stream().map(this::podToMap).collect(Collectors.toList());
     }
 
+    /** 读取Pod详情并分别关联普通与初始化容器状态。 Read Pod details with the corresponding regular and init container statuses. */
     @Override
     public Map<String, Object> getPod(Long clusterId, String namespace, String podName) {
         KubernetesClient client = clientFactory.getClient(clusterId);
@@ -61,14 +64,14 @@ public class K8sPodServiceImpl implements K8sPodService {
         // Detailed container info
         if (pod.getSpec().getContainers() != null) {
             List<Map<String, Object>> containers = pod.getSpec().getContainers().stream()
-                    .map(c -> containerDetailMap(c, pod.getStatus())).collect(Collectors.toList());
+                    .map(c -> containerDetailMap(c, pod.getStatus(), false)).collect(Collectors.toList());
             map.put("containers", containers);
         }
 
         // Init containers
         if (pod.getSpec().getInitContainers() != null && !pod.getSpec().getInitContainers().isEmpty()) {
             List<Map<String, Object>> initContainers = pod.getSpec().getInitContainers().stream()
-                    .map(c -> containerDetailMap(c, pod.getStatus())).collect(Collectors.toList());
+                    .map(c -> containerDetailMap(c, pod.getStatus(), true)).collect(Collectors.toList());
             map.put("initContainers", initContainers);
         }
 
@@ -139,13 +142,12 @@ public class K8sPodServiceImpl implements K8sPodService {
         client.pods().inNamespace(namespace).withName(podName).delete();
     }
 
+    /** 保留成功日志文本，失败交由既有异常包络处理且不回传底层错误。 Preserve successful log text and report failures through existing envelopes without exposing upstream error text. */
     @Override
     public String getPodLogs(Long clusterId, String namespace, String podName, String container, Integer tailLines) {
-        KubernetesClient client = clientFactory.getClient(clusterId);
-
-        var logOp = client.pods().inNamespace(namespace).withName(podName);
-
         try {
+            KubernetesClient client = clientFactory.getClient(clusterId);
+            var logOp = client.pods().inNamespace(namespace).withName(podName);
             var logBuilder = container != null && !container.isEmpty()
                     ? logOp.inContainer(container)
                     : logOp;
@@ -158,8 +160,16 @@ public class K8sPodServiceImpl implements K8sPodService {
             }
             return logs;
         } catch (Exception e) {
-            log.error("Failed to get pod logs {}/{}: {}", namespace, podName, e.getMessage());
-            return "Error fetching logs: " + e.getMessage();
+            // 只记录错误类型，不传播可能含凭据的原文或cause。 Record only the error type; do not propagate text or causes that may contain credentials.
+            log.warn("Failed to read Pod logs for cluster {} ({})", clusterId, e.getClass().getSimpleName());
+            if (e instanceof ClusterConnectionException) {
+                throw new ClusterConnectionException("Pod log connection is unavailable.");
+            }
+            if (e instanceof K8sResourceNotFoundException
+                    || (e instanceof KubernetesClientException clientError && clientError.getCode() == 404)) {
+                throw new K8sResourceNotFoundException("Pod log resource was not found.");
+            }
+            throw new IllegalStateException("Pod log retrieval failed.");
         }
     }
 
@@ -190,6 +200,7 @@ public class K8sPodServiceImpl implements K8sPodService {
         }).collect(Collectors.toList());
     }
 
+    /** 合并容器清单，初始化容器只读取其专属状态集合。 Combine container lists while resolving init containers from their dedicated status collection. */
     @Override
     public List<Map<String, Object>> getPodContainers(Long clusterId, String namespace, String podName) {
         KubernetesClient client = clientFactory.getClient(clusterId);
@@ -202,14 +213,14 @@ public class K8sPodServiceImpl implements K8sPodService {
 
         if (pod.getSpec().getContainers() != null) {
             for (Container c : pod.getSpec().getContainers()) {
-                Map<String, Object> containerMap = containerDetailMap(c, pod.getStatus());
+                Map<String, Object> containerMap = containerDetailMap(c, pod.getStatus(), false);
                 containerMap.put("isInit", false);
                 result.add(containerMap);
             }
         }
         if (pod.getSpec().getInitContainers() != null) {
             for (Container c : pod.getSpec().getInitContainers()) {
-                Map<String, Object> containerMap = containerDetailMap(c, pod.getStatus());
+                Map<String, Object> containerMap = containerDetailMap(c, pod.getStatus(), true);
                 containerMap.put("isInit", true);
                 result.add(containerMap);
             }
@@ -259,15 +270,19 @@ public class K8sPodServiceImpl implements K8sPodService {
         return map;
     }
 
-    private Map<String, Object> containerDetailMap(Container container, PodStatus podStatus) {
+    /** 根据容器类别关联状态，缺失状态保持未知。 Map the correct status collection for each container kind and leave missing status unknown. */
+    /** 读取容器详情，保留 CPU 与内存的规格单位。 Reads container details while retaining CPU and memory specification units. */
+    private Map<String, Object> containerDetailMap(Container container, PodStatus podStatus, boolean initContainer) {
         Map<String, Object> map = new HashMap<>();
         map.put("name", container.getName());
         map.put("image", container.getImage());
         map.put("imagePullPolicy", container.getImagePullPolicy());
 
-        // Find matching container status
-        if (podStatus != null && podStatus.getContainerStatuses() != null) {
-            for (ContainerStatus cs : podStatus.getContainerStatuses()) {
+        // 普通与初始化容器状态不可混用。 Regular and init container statuses must remain separate.
+        List<ContainerStatus> statuses = podStatus == null ? null
+                : initContainer ? podStatus.getInitContainerStatuses() : podStatus.getContainerStatuses();
+        if (statuses != null) {
+            for (ContainerStatus cs : statuses) {
                 if (cs.getName().equals(container.getName())) {
                     map.put("ready", cs.getReady());
                     map.put("restartCount", cs.getRestartCount());
@@ -311,12 +326,12 @@ public class K8sPodServiceImpl implements K8sPodService {
             Map<String, Object> resources = new HashMap<>();
             if (container.getResources().getRequests() != null) {
                 Map<String, String> requests = new HashMap<>();
-                container.getResources().getRequests().forEach((k, v) -> requests.put(k, v.getAmount()));
+                container.getResources().getRequests().forEach((k, v) -> requests.put(k, v.toString()));
                 resources.put("requests", requests);
             }
             if (container.getResources().getLimits() != null) {
                 Map<String, String> limits = new HashMap<>();
-                container.getResources().getLimits().forEach((k, v) -> limits.put(k, v.getAmount()));
+                container.getResources().getLimits().forEach((k, v) -> limits.put(k, v.toString()));
                 resources.put("limits", limits);
             }
             map.put("resources", resources);

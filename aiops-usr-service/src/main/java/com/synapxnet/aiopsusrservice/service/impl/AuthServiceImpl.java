@@ -1,9 +1,11 @@
 package com.synapxnet.aiopsusrservice.service.impl;
 
 import com.synapxnet.aiopsusrservice.entity.User;
+import com.synapxnet.aiopsusrservice.mapper.RoleMapper;
 import com.synapxnet.aiopsusrservice.mapper.UserMapper;
 import com.synapxnet.aiopsusrservice.security.jwt.JwtUtil;
 import com.synapxnet.aiopsusrservice.service.AuthService;
+import com.synapxnet.aiopsusrservice.service.LoginVerificationService;
 import jakarta.annotation.Resource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -14,10 +16,9 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class AuthServiceImpl implements AuthService {
 
-    private static final String DEMO_PHONE = "12345678900";
-    private static final String DEMO_VERIFICATION_CODE = "000000";
-
+    private final RoleMapper roleMapper;
     private final UserMapper userMapper;
+    private final LoginVerificationService verificationService;
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
@@ -25,27 +26,29 @@ public class AuthServiceImpl implements AuthService {
     @Resource
     private JwtUtil jwtUtil;
 
-    public AuthServiceImpl(UserMapper userMapper) {
+    /** 注入用户权限和一次性验证服务。 Inject users, permissions and one-time verification. */
+    public AuthServiceImpl(RoleMapper roleMapper, UserMapper userMapper, LoginVerificationService verificationService) {
+        this.roleMapper = roleMapper;
         this.userMapper = userMapper;
+        this.verificationService = verificationService;
     }
 
+    /** 向实际注册的有效账号发送登录码。 Send a login code to an active registered account. */
     @Override
     public Map<String, Object> sendSmsCode(String userPhone) {
-        if (!DEMO_PHONE.equals(userPhone)) {
-            throw new IllegalArgumentException("展示版仅支持固定手机号");
-        }
-
         User user = userMapper.findByPhone(userPhone);
-        if (user == null) {
-            throw new IllegalArgumentException("User not found");
+        if (user == null || !"active".equals(user.getStatus())) {
+            throw new IllegalArgumentException("账号不存在或已停用，请联系管理员");
         }
-        return Map.of("demo", true);
+        verificationService.send(userPhone);
+        return Map.of("sent", true, "expiresInSeconds", 300);
     }
 
+    /** 登录依赖一次性验证码，不再接受固定比赛码。 Authenticate with a one-time code, never a fixed competition code. */
     @Override
     public Map<String, Object> login(String userPhone, String code) {
-        if (!DEMO_PHONE.equals(userPhone) || !DEMO_VERIFICATION_CODE.equals(code)) {
-            throw new IllegalArgumentException("手机号或验证码错误");
+        if (!verificationService.verify(userPhone, code)) {
+            throw new IllegalArgumentException("手机号或验证码错误，验证码可能已过期");
         }
 
         User user = userMapper.findByPhone(userPhone);
@@ -86,11 +89,12 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    /** 停用后即使旧JWT仍有效也不返回身份。 Reject disabled identities even when an older JWT is valid. */
     @Override
     public Map<String, Object> getUserInfo(String token) {
         String phone = extractPhoneFromToken(token);
         User user = userMapper.findByPhone(phone);
-        if (user == null) {
+        if (user == null || !"active".equals(user.getStatus())) {
             throw new IllegalArgumentException("Invalid or expired token");
         }
 
@@ -99,7 +103,7 @@ public class AuthServiceImpl implements AuthService {
         info.put("username", user.getUsername());
         info.put("realName", user.getUsername());
         info.put("userType", user.getUserType());
-        info.put("roles", List.of(user.getUserType()));
+        info.put("roles", resolveRoleCodes(user));
         info.put("avatar", "");
         info.put("homePath", "/dashboard/overview");
         info.put("desc", "");
@@ -107,17 +111,34 @@ public class AuthServiceImpl implements AuthService {
         return info;
     }
 
+    /** 每次读取权限都核对账号状态。 Recheck account status before returning access permissions. */
     @Override
     public List<String> getAccessCodes(String token) {
         String phone = extractPhoneFromToken(token);
         User user = userMapper.findByPhone(phone);
-        if (user == null) {
+        if (user == null || !"active".equals(user.getStatus())) {
             throw new IllegalArgumentException("Invalid or expired token");
         }
-        if ("admin".equals(user.getUserType())) {
+        List<String> roleCodes = resolveRoleCodes(user);
+        if ("admin".equals(user.getUserType()) || roleCodes.contains("ADMIN")) {
             return List.of("AC_100100", "AC_100110", "AC_100120", "AC_100010");
         }
-        return List.of("AC_100100");
+        return roleCodes.isEmpty() ? List.of() : List.of("AC_100100");
+    }
+
+    /**
+     * 返回数据库中明确分配给用户的角色编码，不存在映射时保持空权限。
+     *
+     * @param user 当前登录用户
+     * @return 当前用户的有效角色编码
+     */
+    private List<String> resolveRoleCodes(User user) {
+        List<String> roleCodes = roleMapper.findByUserId(user.getId()).stream()
+                .map(mapping -> mapping.getRoleCode())
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        return roleCodes;
     }
 
     private String extractPhoneFromToken(String token) {

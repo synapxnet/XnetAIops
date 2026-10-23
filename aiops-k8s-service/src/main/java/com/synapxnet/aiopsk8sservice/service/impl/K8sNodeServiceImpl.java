@@ -3,6 +3,7 @@ package com.synapxnet.aiopsk8sservice.service.impl;
 import com.synapxnet.aiopsk8sservice.exception.K8sResourceNotFoundException;
 import com.synapxnet.aiopsk8sservice.service.K8sClientFactory;
 import com.synapxnet.aiopsk8sservice.service.K8sNodeService;
+import com.synapxnet.aiopsk8sservice.service.K8sResourceQuantity;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import org.slf4j.Logger;
@@ -249,13 +250,16 @@ public class K8sNodeServiceImpl implements K8sNodeService {
         Map<String, Quantity> capacity = node.getStatus().getCapacity();
         Map<String, Quantity> allocatable = node.getStatus().getAllocatable();
         if (capacity != null) {
-            map.put("cpuCapacity", capacity.get("cpu") != null ? capacity.get("cpu").getAmount() : "0");
+            map.put("cpuCapacity", K8sResourceQuantity.cpuCoresText(capacity.get("cpu")));
             map.put("memoryCapacity", capacity.get("memory") != null ? capacity.get("memory").getAmount() : "0");
+            // 明确字节单位供新版页面读取，保留旧字段。 / Provide explicit bytes for new pages while retaining the legacy field.
+            map.put("memoryCapacityBytes", K8sResourceQuantity.bytes(capacity.get("memory")));
             map.put("podCapacity", capacity.get("pods") != null ? capacity.get("pods").getAmount() : "0");
         }
         if (allocatable != null) {
-            map.put("cpuAllocatable", allocatable.get("cpu") != null ? allocatable.get("cpu").getAmount() : "0");
+            map.put("cpuAllocatable", K8sResourceQuantity.cpuCoresText(allocatable.get("cpu")));
             map.put("memoryAllocatable", allocatable.get("memory") != null ? allocatable.get("memory").getAmount() : "0");
+            map.put("memoryAllocatableBytes", K8sResourceQuantity.bytes(allocatable.get("memory")));
         }
 
         // System info

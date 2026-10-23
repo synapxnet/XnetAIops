@@ -63,4 +63,11 @@ public class K8sPipelineRunController {
         runService.stopRun(projectId, pipelineId, runId);
         return Result.success();
     }
+
+    /** 由后端核对归属及终态后复用原参数重跑。 Verify ownership and terminal state before replaying original parameters. */
+    @PostMapping("/{runId}/replay")
+    public Result<K8sPipelineRun> replay(@PathVariable Long projectId, @PathVariable Long pipelineId,
+                                        @PathVariable Long runId) {
+        return Result.success(runService.replayRun(projectId, pipelineId, runId, "manual-replay"));
+    }
 }

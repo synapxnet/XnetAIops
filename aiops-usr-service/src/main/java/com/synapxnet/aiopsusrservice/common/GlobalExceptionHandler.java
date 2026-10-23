@@ -24,6 +24,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.ok(Result.error(400, e.getMessage()));
     }
 
+    /** 保留可预期的短信配置与限流错误，不公开底层异常。 Preserve expected SMS configuration/rate-limit errors without exposing internals. */
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<Result<?>> handleStatus(org.springframework.web.server.ResponseStatusException error) {
+        return ResponseEntity.status(error.getStatusCode())
+                .body(Result.error(error.getStatusCode().value(), error.getReason()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Result<?>> handleException(Exception e) {
         log.error("Internal error: {}", e.getMessage(), e);

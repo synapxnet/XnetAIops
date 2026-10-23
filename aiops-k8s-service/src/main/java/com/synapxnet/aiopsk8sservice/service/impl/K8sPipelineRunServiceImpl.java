@@ -46,6 +46,7 @@ public class K8sPipelineRunServiceImpl implements K8sPipelineRunService {
     public K8sPipelineRun triggerRun(Long projectId, Long pipelineId, String triggerUser, Map<String, String> params) {
         K8sPipeline pipeline = pipelineMapper.findById(pipelineId);
         if (pipeline == null) throw new RuntimeException("流水线不存在: " + pipelineId);
+        if (!Objects.equals(projectId, pipeline.getProjectId())) throw new IllegalArgumentException("流水线不属于当前项目");
 
         JenkinsClient client = getJenkinsClient(projectId);
 
@@ -84,6 +85,32 @@ public class K8sPipelineRunServiceImpl implements K8sPipelineRunService {
         pipelineMapper.updateLastRun(pipelineId, "running", LocalDateTime.now());
 
         return run;
+    }
+
+    /** 重跑仅复用已结束记录的参数，不允许跨项目或跨流水线引用。 Replay completed parameters only; reject cross-project and cross-pipeline references. */
+    @Override
+    public K8sPipelineRun replayRun(Long projectId, Long pipelineId, Long runId, String triggerUser) {
+        K8sPipeline pipeline = pipelineMapper.findById(pipelineId);
+        if (pipeline == null || !Objects.equals(projectId, pipeline.getProjectId()))
+            throw new IllegalArgumentException("流水线不属于当前项目");
+        K8sPipelineRun prior = getRun(runId);
+        if (!Objects.equals(pipelineId, prior.getPipelineId())) throw new IllegalArgumentException("运行记录不属于当前流水线");
+        if (!Set.of("success", "failed", "aborted", "unstable").contains(String.valueOf(prior.getStatus()).toLowerCase(Locale.ROOT)))
+            throw new IllegalArgumentException("仅已结束的运行可以重放");
+        Map<String, String> parameters = new LinkedHashMap<>();
+        if (prior.getParameters() != null && !prior.getParameters().isBlank()) {
+            try {
+                var parsed = objectMapper.readTree(prior.getParameters());
+                if (!parsed.isObject()) throw new IllegalArgumentException("原运行参数无效");
+                var fields = parsed.fields();
+                while (fields.hasNext()) {
+                    var field = fields.next();
+                    if (!field.getValue().isTextual()) throw new IllegalArgumentException("原运行参数必须是字符串");
+                    parameters.put(field.getKey(), field.getValue().asText());
+                }
+            } catch (java.io.IOException invalid) { throw new IllegalArgumentException("原运行参数无效"); }
+        }
+        return triggerRun(projectId, pipelineId, triggerUser, parameters);
     }
 
     @Override

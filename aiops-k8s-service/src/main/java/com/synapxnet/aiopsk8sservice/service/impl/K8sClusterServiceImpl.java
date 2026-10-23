@@ -11,12 +11,14 @@ import com.synapxnet.aiopsk8sservice.mapper.K8sClusterMetricsMapper;
 import com.synapxnet.aiopsk8sservice.service.K8sClientFactory;
 import com.synapxnet.aiopsk8sservice.service.K8sClusterService;
 import com.synapxnet.aiopsk8sservice.service.K8sMetricsService;
+import com.synapxnet.aiopsk8sservice.service.K8sResourceQuantity;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.VersionInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -32,6 +34,9 @@ public class K8sClusterServiceImpl implements K8sClusterService {
     private final K8sClusterMetricsMapper metricsMapper;
     private final K8sClientFactory clientFactory;
     private final K8sMetricsService metricsService;
+
+    @Value("${openxnet.k8s.ui-reader:false}")
+    private boolean uiReader;
 
     public K8sClusterServiceImpl(K8sClusterMapper clusterMapper,
                                   K8sClusterComponentMapper componentMapper,
@@ -151,6 +156,7 @@ public class K8sClusterServiceImpl implements K8sClusterService {
         return result;
     }
 
+    /** 读取真实总览；独立 reader 不回写集群状态。 Reads the live overview without persisting cluster state in isolated reader mode. */
     @Override
     public Map<String, Object> getOverview(Long id) {
         K8sCluster cluster = getById(id);
@@ -195,8 +201,10 @@ public class K8sClusterServiceImpl implements K8sClusterService {
             overview.put("k8sVersion", version.getGitVersion());
 
             // Update cluster info in DB
-            clusterMapper.updateClusterInfo(id, nodes.size(), namespaces.size(), version.getGitVersion());
-            clusterMapper.updateStatus(id, "active");
+            if (!uiReader) {
+                clusterMapper.updateClusterInfo(id, nodes.size(), namespaces.size(), version.getGitVersion());
+                clusterMapper.updateStatus(id, "active");
+            }
 
             // Aggregate resource metrics from nodes
             double cpuCapacity = 0, cpuUsed = 0;
@@ -233,13 +241,14 @@ public class K8sClusterServiceImpl implements K8sClusterService {
 
         } catch (Exception e) {
             log.error("Error getting overview for cluster {}: {}", id, e.getMessage());
-            clusterMapper.updateStatus(id, "error");
+            if (!uiReader) clusterMapper.updateStatus(id, "error");
             throw new ClusterConnectionException("Failed to get cluster overview: " + e.getMessage());
         }
 
         return overview;
     }
 
+    /** 独立读取返回当前组件状态，不更新缓存记录。 Returns current components without updating stored cache records in reader mode. */
     @Override
     public List<K8sClusterComponent> getComponents(Long id) {
         KubernetesClient client = clientFactory.getClient(id);
@@ -270,9 +279,11 @@ public class K8sClusterServiceImpl implements K8sClusterService {
             }
 
             // Persist components
-            componentMapper.deleteByClusterId(id);
-            for (K8sClusterComponent comp : components) {
-                componentMapper.insert(comp);
+            if (!uiReader) {
+                componentMapper.deleteByClusterId(id);
+                for (K8sClusterComponent comp : components) {
+                    componentMapper.insert(comp);
+                }
             }
 
         } catch (Exception e) {
@@ -286,6 +297,7 @@ public class K8sClusterServiceImpl implements K8sClusterService {
         return components;
     }
 
+    /** 独立读取只返回指标，不写入快照表。 Returns metrics without inserting snapshots in reader mode. */
     @Override
     public K8sClusterMetricsSnapshot getMetrics(Long id) {
         try {
@@ -301,7 +313,7 @@ public class K8sClusterServiceImpl implements K8sClusterService {
             snapshot.setStorageCapacity(((Number) metrics.getOrDefault("storageCapacity", 0L)).longValue());
             snapshot.setStorageUsed(((Number) metrics.getOrDefault("storageUsed", 0L)).longValue());
 
-            metricsMapper.insert(snapshot);
+            if (!uiReader) metricsMapper.insert(snapshot);
             return snapshot;
         } catch (Exception e) {
             // Return latest cached
@@ -358,33 +370,14 @@ public class K8sClusterServiceImpl implements K8sClusterService {
                 .anyMatch(c -> "Ready".equals(c.getType()) && "True".equals(c.getStatus()));
     }
 
+    /** 总览容量与指标使用相同的核数契约。 / Use the same core contract for overview capacity and metrics. */
     private double parseCpu(Quantity quantity) {
-        if (quantity == null) return 0;
-        String value = quantity.getAmount();
-        String format = quantity.getFormat();
-        try {
-            double num = Double.parseDouble(value);
-            if (format != null && format.equals("m")) return num / 1000.0;
-            if (value.endsWith("m")) return Double.parseDouble(value.replace("m", "")) / 1000.0;
-            return num;
-        } catch (Exception e) {
-            return 0;
-        }
+        return K8sResourceQuantity.cpuCores(quantity);
     }
 
+    /** 总览容量保留 Fabric8 二进制和十进制单位。 / Preserve Fabric8 binary and decimal units in overview capacity. */
     private long parseMemory(Quantity quantity) {
-        if (quantity == null) return 0;
-        String value = quantity.getAmount();
-        try {
-            double num = Double.parseDouble(value.replaceAll("[^0-9.]", ""));
-            if (value.endsWith("Ki")) return (long) (num * 1024);
-            if (value.endsWith("Mi")) return (long) (num * 1024 * 1024);
-            if (value.endsWith("Gi")) return (long) (num * 1024 * 1024 * 1024);
-            if (value.endsWith("Ti")) return (long) (num * 1024L * 1024 * 1024 * 1024);
-            return (long) num;
-        } catch (Exception e) {
-            return 0;
-        }
+        return K8sResourceQuantity.bytes(quantity);
     }
 
     private int parseInt(Quantity quantity) {

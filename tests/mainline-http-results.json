@@ -1,0 +1,174 @@
+{
+  "metadata": {
+    "copyright": "Copyright (C) 2026 Synapxnet. All rights reserved.",
+    "confidentiality": "Proprietary and Confidential",
+    "author": "maoyo",
+    "department": "研发部",
+    "date": "2026-10-23",
+    "version": "1.3.0",
+    "securityLevel": "INTERNAL"
+  },
+  "environment": "Isolated random MySQL schema + real service jars + Redis + loopback SMS receiver; no live platform or external model calls",
+  "checks": [
+    {
+      "check": "DevOps schema can be applied twice on MySQL 8",
+      "passed": true
+    },
+    {
+      "check": "organization access migration upgrades and reapplies without granting access",
+      "passed": true
+    },
+    {
+      "check": "anonymous user administration denied",
+      "passed": true
+    },
+    {
+      "check": "fixed competition code rejected",
+      "passed": true
+    },
+    {
+      "check": "POST /api/usr/sms-code",
+      "passed": true
+    },
+    {
+      "check": "POST /api/usr/login",
+      "passed": true
+    },
+    {
+      "check": "one-time code cannot be reused",
+      "passed": true
+    },
+    {
+      "check": "GET /api/usr/user/info",
+      "passed": true
+    },
+    {
+      "check": "GET /api/usr/auth/codes",
+      "passed": true
+    },
+    {
+      "check": "GET /api/usr/organization-tree",
+      "passed": true
+    },
+    {
+      "check": "GET /api/usr/users",
+      "passed": true
+    },
+    {
+      "check": "passwords are not serialized",
+      "passed": true
+    },
+    {
+      "check": "GET /api/usr/roles",
+      "passed": true
+    },
+    {
+      "check": "POST /api/usr/sms-code",
+      "passed": true
+    },
+    {
+      "check": "POST /api/usr/login",
+      "passed": true
+    },
+    {
+      "check": "ordinary user cannot manage roles",
+      "passed": true
+    },
+    {
+      "check": "GET /api/clm/clusters",
+      "passed": true
+    },
+    {
+      "check": "new mainline database has no demo clusters",
+      "passed": true
+    },
+    {
+      "check": "POST /api/clm/clusters",
+      "passed": true
+    },
+    {
+      "check": "cluster create has persistent identifier",
+      "passed": true
+    },
+    {
+      "check": "GET /api/clm/clusters/1",
+      "passed": true
+    },
+    {
+      "check": "cluster fields survive database round trip",
+      "passed": true
+    },
+    {
+      "check": "PUT /api/clm/clusters/1",
+      "passed": true
+    },
+    {
+      "check": "GET /api/clm/clusters/1/overview",
+      "passed": true
+    },
+    {
+      "check": "POST /api/clm/clusters/1/variables",
+      "passed": true
+    },
+    {
+      "check": "GET /api/clm/clusters/1/variables",
+      "passed": true
+    },
+    {
+      "check": "cluster variable persisted",
+      "passed": true
+    },
+    {
+      "check": "DELETE /api/clm/clusters/variables/1",
+      "passed": true
+    },
+    {
+      "check": "DELETE /api/clm/clusters/1",
+      "passed": true
+    },
+    {
+      "check": "GET /api/clm/clusters",
+      "passed": true
+    },
+    {
+      "check": "cluster delete persisted",
+      "passed": true
+    },
+    {
+      "check": "GET /api/hom/hosts",
+      "passed": true
+    },
+    {
+      "check": "GET /api/hom/racks?clusterId=1",
+      "passed": true
+    },
+    {
+      "check": "GET /api/svm/services",
+      "passed": true
+    },
+    {
+      "check": "GET /api/mon/alerts",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reg/registries",
+      "passed": true
+    },
+    {
+      "check": "GET /api/k8s/clusters",
+      "passed": true
+    },
+    {
+      "check": "GET /api/k8s/devops/projects",
+      "passed": true
+    },
+    {
+      "check": "POST /api/usr/logout",
+      "passed": true
+    },
+    {
+      "check": "logged-out administrator rejected",
+      "passed": true
+    }
+  ]
+}

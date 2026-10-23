@@ -14,6 +14,15 @@ public interface ServiceInstanceService {
 
     ServiceInstance getById(Long id);
 
+    /**
+     * 根据稳定 UID 获取服务实例。
+     *
+     * @param uid 服务实例 UID
+     * @return 服务领域记录
+      * English: Reads stable native resource identifiers or preserves actual Kubernetes state fields without changing existing mutations.
+     */
+    ServiceInstance getByUid(String uid);
+
     Map<String, Object> getDetail(Long id);
 
     ServiceInstance create(ServiceInstance serviceInstance);

@@ -171,33 +171,14 @@ public class K8sMetricsService {
         return ranking.stream().limit(limit).toList();
     }
 
+    /** 将指标与容量统一为 CPU 核数。 / Normalize metrics and capacity to CPU cores. */
     private double parseCpuNano(Quantity quantity) {
-        if (quantity == null) return 0;
-        String amount = quantity.getAmount();
-        try {
-            if (amount.endsWith("n")) {
-                return Double.parseDouble(amount.replace("n", "")) / 1_000_000_000.0;
-            } else if (amount.endsWith("m")) {
-                return Double.parseDouble(amount.replace("m", "")) / 1000.0;
-            }
-            return Double.parseDouble(amount);
-        } catch (Exception e) {
-            return 0;
-        }
+        return K8sResourceQuantity.cpuCores(quantity);
     }
 
+    /** 保留 Quantity 的单位并返回实际字节数。 / Preserve Quantity units and return the actual byte count. */
     private long parseMemoryBytes(Quantity quantity) {
-        if (quantity == null) return 0;
-        String amount = quantity.getAmount();
-        try {
-            if (amount.endsWith("Ki")) return (long) (Double.parseDouble(amount.replace("Ki", "")) * 1024);
-            if (amount.endsWith("Mi")) return (long) (Double.parseDouble(amount.replace("Mi", "")) * 1024 * 1024);
-            if (amount.endsWith("Gi")) return (long) (Double.parseDouble(amount.replace("Gi", "")) * 1024 * 1024 * 1024);
-            if (amount.endsWith("Ti")) return (long) (Double.parseDouble(amount.replace("Ti", "")) * 1024L * 1024 * 1024 * 1024);
-            return Long.parseLong(amount.replaceAll("[^0-9]", ""));
-        } catch (Exception e) {
-            return 0;
-        }
+        return K8sResourceQuantity.bytes(quantity);
     }
 
     private int parseIntQuantity(Quantity quantity) {

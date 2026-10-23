@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS xnet_aiops_k8s_devops_project (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
   description TEXT,
-  jenkins_url VARCHAR(500) NOT NULL COMMENT 'Jenkins地址, e.g. http://127.0.0.1:8080',
+  jenkins_url VARCHAR(500) NOT NULL COMMENT 'Jenkins地址, e.g. http://192.168.1.10:8080',
   jenkins_user VARCHAR(100) NOT NULL,
   jenkins_token VARCHAR(500) NOT NULL COMMENT 'Jenkins API Token',
   cluster_id BIGINT COMMENT '关联K8s集群ID(可选)',
@@ -78,6 +78,13 @@ CREATE TABLE IF NOT EXISTS xnet_aiops_k8s_pipeline_run (
   FOREIGN KEY (pipeline_id) REFERENCES xnet_aiops_k8s_pipeline(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='流水线运行记录';
 
--- 5. 给Jenkins Master表添加host_id字段(关联HOM主机管理)
-ALTER TABLE xnet_aiops_clm_jenkins_master
-  ADD COLUMN IF NOT EXISTS host_id BIGINT NULL COMMENT '关联HOM主机ID(可选)' AFTER disk_gb;
+-- 5. 用MySQL 8兼容的幂等DDL添加主机关联。 Add the host reference with MySQL 8 compatible idempotent DDL.
+SET @add_jenkins_host_column = IF(
+  EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE()
+    AND table_name = 'xnet_aiops_clm_jenkins_master' AND column_name = 'host_id'),
+  'SELECT 1',
+  'ALTER TABLE xnet_aiops_clm_jenkins_master ADD COLUMN host_id BIGINT NULL COMMENT ''关联HOM主机ID(可选)'' AFTER disk_gb'
+);
+PREPARE add_jenkins_host_statement FROM @add_jenkins_host_column;
+EXECUTE add_jenkins_host_statement;
+DEALLOCATE PREPARE add_jenkins_host_statement;

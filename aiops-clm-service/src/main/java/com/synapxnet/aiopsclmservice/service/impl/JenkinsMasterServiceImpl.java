@@ -302,6 +302,9 @@ public class JenkinsMasterServiceImpl implements JenkinsMasterService {
 
     @Override
     public Map<String, Object> deployMaster(Long masterId, JenkinsMasterDeployConfig config) {
+        if (config.getAdminPassword() == null || config.getAdminPassword().isBlank()) {
+            throw new IllegalArgumentException("Jenkins 管理员密码不能为空");
+        }
         Map<String, Object> result = new HashMap<>();
         JenkinsMaster master = getMasterById(masterId);
         if (config.getJenkinsVersion() != null)
@@ -361,7 +364,7 @@ public class JenkinsMasterServiceImpl implements JenkinsMasterService {
                 master.setStatus("deployed");
                 deployLog.append("\n=== 部署成功 ===\n");
                 // 使用用户配置的管理员密码（init.groovy.d已自动跳过向导并创建管理员账号）
-                String adminPassword = config.getAdminPassword() != null ? config.getAdminPassword() : "admin123";
+                String adminPassword = config.getAdminPassword();
                 master.setInitial_password(adminPassword);
                 deployLog.append("管理员用户: ").append(config.getAdminUsername() != null ? config.getAdminUsername() : "admin").append("\n");
                 deployLog.append("管理员密码: ").append(adminPassword).append("\n");
@@ -422,7 +425,7 @@ public class JenkinsMasterServiceImpl implements JenkinsMasterService {
             template = template.replace("${ADMIN_USERNAME}",
                     config.getAdminUsername() != null ? config.getAdminUsername() : "admin");
             template = template.replace("${ADMIN_PASSWORD}",
-                    config.getAdminPassword() != null ? config.getAdminPassword() : "admin123");
+                    config.getAdminPassword());
             template = template.replace("${ADMIN_EMAIL}",
                     config.getAdminEmail() != null ? config.getAdminEmail() : "admin@localhost");
             template = template.replace("${INSTALL_SUGGESTED_PLUGINS}",

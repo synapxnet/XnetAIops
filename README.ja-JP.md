@@ -1,111 +1,55 @@
-<div align="center">
+<!-- Copyright (C) 2026 Synapxnet. All rights reserved.
+Synapxnet Proprietary and Confidential. No copying, distribution or use without authorization.
+Author: maoyo | Department: 研发部 | Date: 2026-10-23 | Version: 1.3.0 | Security Level: INTERNAL -->
+# XnetAIOps
 
-[简体中文](./README.md) | [English](./README.en-US.md) | **日本語**
+[简体中文](README.md) · [English](README.en-US.md)
 
-# XnetAIops
+XnetAIOps は、インフラ運用と権限制御された Agent 実行を提供します。クラスター、ホスト、サービス、監視、Kubernetes、レジストリ、組織権限に加え、常駐 Agent、横断的な証拠収集、承認、独立検証、復旧の機能を維持します。
 
-**インフラ、サービス、Kubernetes を統合するオープンソース AIOps**
-
-[![GOAI release](https://img.shields.io/badge/GOAI%20release-1.3.0-1677ff.svg)](https://github.com/synapxnet/XnetAIops/releases/tag/v1.3.0)
-[![Java](https://img.shields.io/badge/Java-17-e76f00.svg)](https://www.oracle.com/java/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.6-6db33f.svg)](https://spring.io/projects/spring-boot)
-[![License](https://img.shields.io/badge/license-MIT-2ea44f.svg)](./LICENSE)
-
-[オンラインデモ](https://goai.xnetaiops.synapxnet.online) · [フロントエンド: XnetAIops-web](https://github.com/synapxnet/XnetAIops-web/tree/v1.3.0) · [OpenXnet](https://openxnet.synapxnet.com) · [ライセンス](./LICENSE)
-
-</div>
-
-## GOAI 決勝版 · v1.3.0
-
-[リリース・チェックサム](https://github.com/synapxnet/XnetAIops/releases/tag/v1.3.0) · [ソース ZIP](https://github.com/synapxnet/XnetAIops/releases/download/v1.3.0/XnetAIops-v1.3.0-source.zip) · [v1.3.0 ソース](https://github.com/synapxnet/XnetAIops/tree/v1.3.0) · [対応する XnetAIops-web](https://github.com/synapxnet/XnetAIops-web/releases/tag/v1.3.0) · [OpenXnet デスクトップ](https://github.com/synapxnet/OpenXnet/releases/tag/v1.3.0)
-
-> 既定の `display` ブランチには過去のコードが残っています。バッジは GOAI リリースを示します。v1.3.0 の利用にはタグまたはリリース添付ファイルを選択してください。
-
-プラットフォーム常駐 Agent がインフラの証拠を提供し、OpenXnet と AgentTeams が共同作業を調整します。承認検証、リソース版、冪等性、チェックポイントで実行境界を管理し、読み取りサービスと実行サービスを分離します。
-
-依存関係、検証結果、制限は[プログラム検証基準・構築・配布の説明](https://github.com/synapxnet/XnetAIops/blob/0ccbeab11ea0903c9e1eec55ad36543f726d56e6/docs/GOAI-FINALS-V1.3.0-SOURCE-DELIVERY.md)を参照してください。この公開はオンライン環境の再デプロイを意味しません。
-
-> 以下は旧版の画面例です。v1.3.0 の UI 検証画像ではありません。
-
-![XnetAIops 3D クラスター概要](./docs/images/xnetaiops-overview-2026.png)
-
-## 画面プレビュー
-
-| デモログイン | プロジェクト情報 |
-| --- | --- |
-| ![デモログイン](./docs/images/xnetaiops-login.png) | ![XnetAIops について](./docs/images/xnetaiops-about.png) |
-| クラスター管理 | ホスト登録 |
-| ![クラスター管理](./docs/images/xnetaiops-clusters.png) | ![ホスト登録](./docs/images/xnetaiops-host-add.png) |
-| Kubernetes | サービス編成 |
-| ![Kubernetes](./docs/images/xnetaiops-kubernetes.png) | ![サービス編成](./docs/images/xnetaiops-service.png) |
-| 監視とアラート | イメージレジストリ |
-| ![監視](./docs/images/xnetaiops-monitor-2026.png) | ![レジストリ](./docs/images/xnetaiops-registry.png) |
-| マルチテナントユーザー | Kubernetes ノード |
-| ![ユーザー](./docs/images/xnetaiops-users.png) | ![Kubernetes ノード](./docs/images/xnetaiops-k8s-nodes.png) |
-| Kubernetes 名前空間 | Kubernetes ワークロード |
-| ![Kubernetes 名前空間](./docs/images/xnetaiops-k8s-namespaces.png) | ![Kubernetes ワークロード](./docs/images/xnetaiops-workloads-2026.png) |
-
-## 概要
-
-XnetAIops は **SynapXnet チーム**が開発・公開する運用管理プラットフォームです。サーバー、ミドルウェア、業務サービス、Kubernetes、監視、イメージレジストリを一つのワークスペースで管理できます。
-
-本リポジトリはバックエンドです。[XnetAIops-web](https://github.com/synapxnet/XnetAIops-web/tree/v1.3.0) と組み合わせることで、企業向けのマルチテナント、フロントエンド・バックエンド分離システムを構成します。
-
-## 特長
-
-- **企業向けマルチテナント:** ユーザー、ロール、チーム、リソース境界を統合管理。
-- **フロントエンド・バックエンド分離:** 既存ゲートウェイやインフラへ柔軟に統合。
-- **モジュール構成:** インフラ、サービス、Kubernetes、監視、レジストリを独立して拡張。
-- **コンテナ配備:** Maven と Docker Compose による再現可能な導入。
-- **継続的な更新:** 自動化、可観測性、セキュリティ、ドキュメントを継続改善。
+開発の主ブランチは `main` です。過去のリリースブランチとタグも保持します。
 
 ## モジュール
 
-| モジュール | サービス | 主な機能 |
-| --- | --- | --- |
-| CLM | `aiops-clm-service` | クラスターライフサイクル、MySQL、Redis、Hadoop、Jenkins |
-| HOM | `aiops-hom-service` | ホスト、ラック、SSH 接続、リソース台帳 |
-| SVM | `aiops-svm-service` | サービス定義、ロール割当、コマンド、ライフサイクル |
-| MON | `aiops-mon-service` | 監視ダッシュボード、アラートルール、履歴、通知 |
-| K8S | `aiops-k8s-service` | クラスター、Helm、監視、アラート、アプリ、パイプライン |
-| REG | `aiops-reg-service` | レジストリ、プロジェクト、タグ、同期、配備履歴 |
-| USR | `aiops-usr-service` | 認証、ユーザー、ロール、アクセス制御 |
+| モジュール | 役割 |
+| --- | --- |
+| CLM / HOM | クラスター、ホスト、ラック、基盤のライフサイクル |
+| SVM / MON | サービス操作、コマンド、監視、アラート |
+| K8S / REG | Kubernetes、Helm、パイプライン、イメージ、成果物 |
+| USR | ユーザー、ロール、組織、ログイン認証 |
+| Agent contract | 委任認証、証拠、計画に紐づく承認、バージョン、冪等性、補償 |
 
-## v1.3.0 の取得とビルド
+OpenXnet がプラットフォーム間を連携し、各プラットフォームは独自の操作と権限境界を維持します。常駐 Agent と AgentTeams は別サービスとして構成します。
 
-JDK 17、Maven 3.9、MySQL 8.x、Redis 7.x を使用します。バックエンドは Spring Boot 3.4.6 と MyBatis です。過去の `display` ではなく固定 GOAI タグを取得してください。
+## ビルドとテスト
+
+JDK 17 と Maven 3.9 を使用します。サービスの実行には MySQL 8 と Redis 7 が必要です。
 
 ```bash
-git clone --branch v1.3.0 --depth 1 https://github.com/synapxnet/XnetAIops.git
-cd XnetAIops
+mvn -B test
 mvn -B -DskipTests package
 ```
 
-成果物は各モジュールの `target/*-1.3.0.jar` です。このコマンドはビルドのみです。テストと制限は配布説明を参照してください。
+成果物は各サービスの `target/` に出力されます。標準 Compose は基本サービスを対象とし、常駐 Agent、AgentTeams、承認サービス、実行ランタイムは別途設定します。
 
-### 配備の前提
+## 設定とログイン
 
-- 外部 MySQL と Redis を用意し、`XnetAIops.sql`、K8s/DevOps テーブル、`database/migrations` を既存状態と照合して、バックアップ後に必要な初期化・移行を行います。初期化済み DB イメージは同梱しません。
-- `.env.example` から DB、Redis、`K8S_ENCRYPTION_KEY` の設定を作成します。USR の `JWT_SECRET` は汎用 Compose では渡されないため、専用 override などで `aiops-usr-service` へ注入してください。`.env` のコピーだけでは不十分です。
-- 対応フロントエンドも `v1.3.0` でビルドし、`WEB_DIST_PATH` を `apps/web-antd/dist` へ設定します。Web は `81`、内部 USR は `9185`、CLM/HOM/SVM/MON/K8S/REG は `9181/9182/9183/9184/9186/9187` です。公開アクセスには HTTPS ゲートウェイを使用します。
-- 汎用 Compose には常駐 Agent、AgentTeams、承認サービス、reader/checkpoint の分離配備は含まれません。固定版 OpenXnet の常駐サービスを別途配備し、`/api/resident/v1/` を転送します。完全な決勝環境は Compose 一行だけでは再現できません。
+`.env.example` を基に、データベース、Redis、`JWT_SECRET`、`K8S_ENCRYPTION_KEY` を設定します。データベースをバックアップし、`XnetAIops.sql`、K8s/DevOps スキーマ、`database/migrations` を確認して必要な初期化・移行のみを適用してください。`WEB_DIST_PATH` は対応するフロントエンドのビルド先です。
 
-設定後、隔離環境で `docker compose up -d --build` と `docker compose ps` を実行します。既存の大会環境を汎用設定で上書きしないでください。
+管理者が実際のアカウントと組織所属を登録します。共通アカウントや固定認証コードはありません。`XNET_SMS_GATEWAY_URL` と `XNET_SMS_GATEWAY_TOKEN` を設定します。ゲートウェイは Bearer 認証付き POST の `{phone, code, purpose: "login", expiresInSeconds: 300}` を受け取り、HTTP 2xx と `{"accepted": true}` で送信成功を返します。
 
-## デモへのアクセス
+空のデータベースには `XnetAIops.sql`、続いて同じデータベース内で `devops-tables.sql` を適用します。既存環境はバックアップ後、必要に応じて `database/migrations/20261023-mainline-organization-access.sql` を適用し、初期化ファイル全体を再実行しないでください。組織データへのアクセスは既定で無効です。初回のみデータベース権限を持つ運用者が、一意の UID、実際の電話番号、新規 BCrypt ハッシュ、`user_type=admin`、`status=active` を指定して管理者を登録します。SMS ログイン後に他のアカウントを管理できます。匿名の初期化 API はありません。
 
-- 現在の GOAI 入口: <https://goai.xnetaiops.synapxnet.online/#/auth/login>。
-- デモ電話番号: `17870171303`。確認コード: `000000`（6 桁、このデモ環境専用）。
-- 電話番号と確認コードでログインします。OpenXnet デスクトップのパスワードではありません。この画面は SMS を送信せず、コードはプロジェクトから提供されます。
-- 2026-09-18 の確認結果: `goai_operator` / `OPERATOR` でログイン成功。ページ名は `XnetAIops`、常駐 Agent は `platform=aiops`、`agentVersion=1.3.0`、`ONLINE`。
-- このコードはログイン専用です。AgentTeams デモアクセスコード、Live 実行承認、モデル API キーとは別であり、後者は公開しません。
+認証コードは有効期間 5 分、送信間隔 60 秒、誤入力上限 5 回で、成功後は再利用できません。未設定時は送信を拒否します。無効化されたアカウントは古い JWT でもユーザー情報や権限を取得できません。
 
-API ゲートウェイは同一オリジンの `https://goai.xnetaiops.synapxnet.online` です。ログインは `POST /api/usr/login`、身元確認は `GET /api/usr/user/info`、常駐状態は `GET /api/resident/v1/status`。後二者にはプラットフォームの Bearer トークンが必要です。業務の接頭辞は `/api/clm`、`/api/hom`、`/api/svm`、`/api/mon`、`/api/k8s`、`/api/reg` です。
+## 実行と証拠
 
-今回確認したのはログインと読み取り専用の身元・常駐状態です。業務変更やモデル呼び出しは行っていません。`modelConfigured=true` は設定の存在を示し、推論の検証結果ではありません。公開デモの認証を本番環境で使用しないでください。
+実行には、本人確認、ワークスペース、承認、リソースバージョン、冪等性の検査を適用します。本番証拠は `PRODUCTION` と `synthetic=false` の組み合わせで確認し、隔離演習の証拠とは区別します。`OPENXNET_REHEARSAL_ENABLED` は既定で無効です。実行先が未設定の場合、模擬成功を返しません。
 
-## コミュニティとライセンス
+[旧アカウントのアーカイブスクリプト](database/maintenance/archive-competition-identities.sql) は既定でプレビューのみです。対象の確認と個別バックアップ後に実行し、監査主体と業務履歴は保持します。
 
-XnetAIops は [OpenXnet](https://openxnet.synapxnet.com) オープンソースエコシステムの一部です。
+[移行情報](docs/MAINLINE-TRANSITION.md) · [フロントエンド](https://github.com/synapxnet/XnetAIops-web) · [OpenXnet](https://openxnet.synapxnet.com)
 
-[MIT License](./LICENSE) の下で公開されています。Copyright © 2026 SynapXnet.
+## ライセンス
+
+[LICENSE](LICENSE) と各ファイルの表記を参照してください。

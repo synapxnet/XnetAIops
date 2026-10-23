@@ -317,6 +317,7 @@ public class K8sJobServiceImpl implements K8sJobService {
         return map;
     }
 
+    /** 读取任务容器配置并保留数量单位。 Reads job container configuration while retaining quantity units. */
     private Map<String, Object> containerToMap(Container container) {
         Map<String, Object> map = new HashMap<>();
         map.put("name", container.getName());
@@ -328,12 +329,12 @@ public class K8sJobServiceImpl implements K8sJobService {
             Map<String, Object> resources = new HashMap<>();
             if (container.getResources().getRequests() != null) {
                 Map<String, String> requests = new HashMap<>();
-                container.getResources().getRequests().forEach((k, v) -> requests.put(k, v.getAmount()));
+                container.getResources().getRequests().forEach((k, v) -> requests.put(k, v.toString()));
                 resources.put("requests", requests);
             }
             if (container.getResources().getLimits() != null) {
                 Map<String, String> limits = new HashMap<>();
-                container.getResources().getLimits().forEach((k, v) -> limits.put(k, v.getAmount()));
+                container.getResources().getLimits().forEach((k, v) -> limits.put(k, v.toString()));
                 resources.put("limits", limits);
             }
             map.put("resources", resources);

@@ -52,10 +52,10 @@ case "$CNI_PLUGIN" in
             || curl -fsSL --connect-timeout 30 "https://raw.githubusercontent.com/projectcalico/calico/${CALICO_VER}/manifests/calico.yaml" -o "$CALICO_YAML"
 
         # Update CIDR if needed
-        if [ -n "$POD_CIDR" ] && [ "$POD_CIDR" != "127.0.0.1/16" ]; then
+        if [ -n "$POD_CIDR" ] && [ "$POD_CIDR" != "192.168.0.0/16" ]; then
             echo "配置Pod CIDR: ${POD_CIDR}"
             sed -i "s|# - name: CALICO_IPV4POOL_CIDR|- name: CALICO_IPV4POOL_CIDR|" "$CALICO_YAML"
-            sed -i "s|#   value: \"127.0.0.1/16\"|  value: \"${POD_CIDR}\"|" "$CALICO_YAML"
+            sed -i "s|#   value: \"192.168.0.0/16\"|  value: \"${POD_CIDR}\"|" "$CALICO_YAML"
         fi
 
         # 当使用私有仓库时，替换 calico 镜像地址

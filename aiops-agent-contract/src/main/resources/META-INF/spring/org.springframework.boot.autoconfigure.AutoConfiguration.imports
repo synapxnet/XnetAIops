@@ -1,0 +1,7 @@
+# Copyright (C) 2026 Synapxnet. All rights reserved.
+# This file is Synapxnet Proprietary and Confidential. It is strictly
+# forbidden to copy, distribute, or use without explicit authorization.
+# 自动配置发现。 Auto-configuration discovery.
+# Author: maoyo | Department: 研发部 | Date: 2026-09-13 | Version: 1.0.0
+# Security Level: INTERNAL | Maintainer: maoyo | Email: synapxnet@gmail.com
+com.synapxnet.goai.contract.AgentContractAutoConfiguration
