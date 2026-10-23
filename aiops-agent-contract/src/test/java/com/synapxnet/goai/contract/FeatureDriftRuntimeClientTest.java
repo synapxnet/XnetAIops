@@ -76,6 +76,10 @@ class FeatureDriftRuntimeClientTest {
             if (variant.get() == 2) responseData.put("incidentId", "inc_other");
             if (variant.get() == 3) responseData.put("traceId", "trace_other");
             if (variant.get() == 4) responseData.put("sourceMode", "SIMULATION");
+            if (variant.get() == 7) responseData.put("synthetic", false);
+            if (variant.get() == 8) responseData.put("sourceMode", "PRODUCTION");
+            if (variant.get() == 9) responseData.remove("synthetic");
+            if (variant.get() == 10) { responseData.put("sourceMode", "PRODUCTION"); responseData.put("synthetic", false); }
             byte[] output = mapper.writeValueAsBytes(Map.of("data", responseData, "resourceVersion", variant.get() == 5 ? "" : "42"));
             exchange.sendResponseHeaders(variant.get() == 6 ? 409 : 200, output.length); exchange.getResponseBody().write(output); exchange.close();
         }); server.start();
@@ -83,7 +87,8 @@ class FeatureDriftRuntimeClientTest {
             var client = new FeatureDriftRuntimeClient(true, "http://127.0.0.1:" + server.getAddress().getPort(), TOKEN, "mlops", mapper, verifier, HttpClient.newHttpClient());
             String tool = "mlops.deployment.get";
             assertTrue(client.invoke(body(tool, false), context(tool)).success());
-            for (int i = 1; i <= 6; i++) { variant.set(i); assertThrows(AgentContractException.class, () -> client.invoke(body(tool, false), context(tool))); }
+            for (int i = 1; i <= 9; i++) { variant.set(i); assertThrows(AgentContractException.class, () -> client.invoke(body(tool, false), context(tool))); }
+            variant.set(10); assertTrue(client.invoke(body(tool, false), context(tool)).success());
             verifyNoInteractions(verifier);
         } finally { server.stop(0); }
     }

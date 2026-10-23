@@ -238,8 +238,8 @@ class GovernedCheckpointRecoveryTest {
     void failsClosedAtCommitBoundaries(String phase) throws Exception {
         var fixture = fixture(HG2, true);
         AtomicReference<String> failure = new AtomicReference<>();
-        try (var controller = new CompetitionInferenceToolController(verifier(), fixture.directory(), fixture.bootstrap(), fixture.digest(),
-                (directory, currentPhase) -> { if (currentPhase.equals(failure.get())) { failure.set(null); throw new IOException("injected"); } })) {
+        try (var controller = rehearsal(new CompetitionInferenceToolController(verifier(), fixture.directory(), fixture.bootstrap(), fixture.digest(),
+                (directory, currentPhase) -> { if (currentPhase.equals(failure.get())) { failure.set(null); throw new IOException("injected"); } }))) {
             failure.set(phase);
             assertThrows(AgentContractException.class, () -> tune(controller, "inc_fault", "once", "42", false));
             assertThrows(AgentContractException.class, () -> metrics(controller));
@@ -267,8 +267,8 @@ class GovernedCheckpointRecoveryTest {
     @Test
     void rejectsInterruptedInitialization() throws Exception {
         var fixture = fixture(HG2, true);
-        assertThrows(IllegalStateException.class, () -> new CompetitionInferenceToolController(verifier(), fixture.directory(), fixture.bootstrap(), fixture.digest(),
-                (directory, phase) -> { if (phase.equals("after-replace")) throw new IOException("initial marker committed"); }));
+        assertThrows(IllegalStateException.class, () -> rehearsal(new CompetitionInferenceToolController(verifier(), fixture.directory(), fixture.bootstrap(), fixture.digest(),
+                (directory, phase) -> { if (phase.equals("after-replace")) throw new IOException("initial marker committed"); })));
         assertTrue(Files.exists(fixture.directory().resolve("initialized.json")));
         assertFalse(Files.exists(fixture.directory().resolve("checkpoint.json")));
         assertThrows(IllegalStateException.class, () -> open(fixture));
@@ -328,7 +328,7 @@ class GovernedCheckpointRecoveryTest {
     private Fixture fixture(String source, boolean initializeRead) throws Exception {
         Path directory = Files.createDirectory(temporary.resolve("state-" + java.util.UUID.randomUUID()));
         Path bootstrap = temporary.resolve("bootstrap-" + java.util.UUID.randomUUID() + ".json");
-        var baseline = new CompetitionInferenceToolController(verifier());
+        var baseline = rehearsal(new CompetitionInferenceToolController(verifier()));
         if (initializeRead) metrics(baseline);
         JsonNode state = state(baseline);
         ObjectNode document = MAPPER.createObjectNode();
@@ -343,7 +343,7 @@ class GovernedCheckpointRecoveryTest {
 
     /** 打开真实Controller，仅替代外部审批与Windows目录同步。 Opens the real controller while replacing only external approval and Windows directory sync. */
     private CompetitionInferenceToolController open(Fixture fixture) {
-        return new CompetitionInferenceToolController(verifier(), fixture.directory(), fixture.bootstrap(), fixture.digest(), GovernedCheckpointRecoveryTest::testDirectorySync);
+        return rehearsal(new CompetitionInferenceToolController(verifier(), fixture.directory(), fixture.bootstrap(), fixture.digest(), GovernedCheckpointRecoveryTest::testDirectorySync));
     }
 
     /** 读取实际完整状态并按JSON整数语义归一化，逐键比较而不依赖Java节点宽度。 Reads complete actual state and normalizes JSON integer representation for exact key/value comparison independent of Java node width. */
@@ -398,4 +398,9 @@ class GovernedCheckpointRecoveryTest {
 
     /** 保存离线目录、bootstrap与实际摘要。 Holds the offline directory, bootstrap and actual digest. */
     private record Fixture(Path directory, Path bootstrap, String digest) { }
+    /** 现有恢复回归明确使用离线演练，不改变生产默认。 Existing recovery regressions explicitly opt into rehearsal without changing production defaults. */
+    private static CompetitionInferenceToolController rehearsal(CompetitionInferenceToolController controller) {
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "rehearsalEnabled", true);
+        return controller;
+    }
 }

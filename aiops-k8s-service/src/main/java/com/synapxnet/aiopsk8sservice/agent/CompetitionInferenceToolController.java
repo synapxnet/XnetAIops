@@ -49,6 +49,17 @@ public class CompetitionInferenceToolController implements AutoCloseable {
     @org.springframework.beans.factory.annotation.Autowired(required = false)
     private FeatureDriftRuntimeClient featureDriftRuntime;
 
+    @Value("${openxnet.rehearsal.enabled:false}")
+    private boolean rehearsalEnabled;
+
+    /** 主线禁止固定场景产生虚构指标；真实运行时继续使用独立分流。 Block synthetic scenario evidence on mainline while preserving the real runtime path. */
+    private void requireRehearsal() {
+        if (!rehearsalEnabled) {
+            throw new AgentContractException(503, "EXECUTION_TARGET_NOT_CONFIGURED",
+                    "尚未配置此目标的真实执行适配器，请配置平台运行时后重试。");
+        }
+    }
+
 
     private static final String MIGRATION_SOURCE_JAR_SHA256 = "48325d55b67d06c9e9508b340c24a5839dc352f1d8c33c07a22707c3b48b7394";
     private static final String CURRENT_MIGRATION_SOURCE_JAR_SHA256 = "65d376a6f561d42360c5fdff002c8a6625c2fe560507bac6f8fe875b7b94e3c6";
@@ -346,6 +357,7 @@ public class CompetitionInferenceToolController implements AutoCloseable {
         if (featureDriftRuntime != null && featureDriftRuntime.handles(context.toolName(), body.arguments())) {
             return featureDriftRuntime.invoke(body, context);
         }
+        requireRehearsal();
         InferenceMetricsArguments arguments = requireMetricsArguments(body.arguments());
         InferenceResourceBinding binding = InferenceResourceBinding.forRead(arguments.serviceUid(), arguments.deploymentUid());
         return memoryTransaction(() -> {
@@ -380,6 +392,7 @@ public class CompetitionInferenceToolController implements AutoCloseable {
         if (featureDriftRuntime != null && featureDriftRuntime.handles(context.toolName(), body.arguments())) {
             return featureDriftRuntime.invoke(body, context);
         }
+        requireRehearsal();
         RecoveryStatusArguments arguments = requireRecoveryArguments(body.arguments());
         InferenceResourceBinding binding = InferenceResourceBinding.forRead(arguments.serviceUid(), arguments.deploymentUid());
         return memoryTransaction(() -> {
@@ -417,6 +430,7 @@ public class CompetitionInferenceToolController implements AutoCloseable {
         if (featureDriftRuntime != null && featureDriftRuntime.handles(context.toolName(), body.arguments())) {
             return featureDriftRuntime.invoke(body, context);
         }
+        requireRehearsal();
         GpuCapacityArguments arguments = requireGpuArguments(body.arguments());
         return executeWrite(body, context, () -> {
             InferenceState state = state(context.workspaceId(), "service_rec_inference");
@@ -436,6 +450,7 @@ public class CompetitionInferenceToolController implements AutoCloseable {
         if (featureDriftRuntime != null && featureDriftRuntime.handles(context.toolName(), body.arguments())) {
             return featureDriftRuntime.invoke(body, context);
         }
+        requireRehearsal();
         RuntimeTuneArguments arguments = requireRuntimeArguments(body.arguments());
         return executeWrite(body, context, () -> {
             InferenceState state = state(context.workspaceId(), "service_rec_inference");
@@ -459,6 +474,7 @@ public class CompetitionInferenceToolController implements AutoCloseable {
         if (featureDriftRuntime != null && featureDriftRuntime.handles(context.toolName(), body.arguments())) {
             return featureDriftRuntime.invoke(body, context);
         }
+        requireRehearsal();
         CapacityArguments arguments = requireCapacityArguments(body.arguments());
         return executeWrite(body, context, () -> {
             InferenceState state = state(context.workspaceId(), "service_rec_inference");
@@ -479,6 +495,7 @@ public class CompetitionInferenceToolController implements AutoCloseable {
         if (featureDriftRuntime != null && featureDriftRuntime.handles(context.toolName(), body.arguments())) {
             return featureDriftRuntime.invoke(body, context);
         }
+        requireRehearsal();
         TrafficShiftArguments arguments = requireTrafficArguments(body.arguments());
         return executeWrite(body, context, () -> {
             InferenceState state = state(context.workspaceId(), arguments.serviceUid());
@@ -500,6 +517,7 @@ public class CompetitionInferenceToolController implements AutoCloseable {
         if (featureDriftRuntime != null && featureDriftRuntime.handles(context.toolName(), body.arguments())) {
             return featureDriftRuntime.invoke(body, context);
         }
+        requireRehearsal();
         AutoscalingArguments arguments = requireAutoscalingArguments(body.arguments());
         return executeWrite(body, context, () -> {
             InferenceState state = state(context.workspaceId(), "service_rec_inference");
@@ -525,6 +543,7 @@ public class CompetitionInferenceToolController implements AutoCloseable {
         if (featureDriftRuntime != null && featureDriftRuntime.handles(context.toolName(), body.arguments())) {
             return featureDriftRuntime.invoke(body, context);
         }
+        requireRehearsal();
         CapacityConvergeArguments arguments = requireConvergeArguments(body.arguments());
         return executeWrite(body, context, () -> {
             InferenceState state = state(context.workspaceId(), "service_rec_inference");

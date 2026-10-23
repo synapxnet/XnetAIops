@@ -115,7 +115,9 @@ public final class FeatureDriftRuntimeClient {
         Object raw = result.get("data");
         if (!(raw instanceof Map<?, ?>)) throw error(502, "FEATURE_DRIFT_RESPONSE_INVALID");
         Map<String, Object> data = (Map<String, Object>) raw;
-        if (!SOURCE_MODE.equals(data.get("sourceMode")) || !context.workspaceId().equals(data.get("workspaceId"))
+        boolean validSource = (SOURCE_MODE.equals(data.get("sourceMode")) && Boolean.TRUE.equals(data.get("synthetic")))
+                || ("PRODUCTION".equals(data.get("sourceMode")) && Boolean.FALSE.equals(data.get("synthetic")));
+        if (!validSource || !context.workspaceId().equals(data.get("workspaceId"))
                 || !context.incidentId().equals(data.get("incidentId")) || !context.traceId().equals(data.get("traceId"))) {
             throw error(502, "FEATURE_DRIFT_SCOPE_MISMATCH");
         }

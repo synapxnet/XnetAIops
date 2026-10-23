@@ -527,45 +527,11 @@ CREATE TABLE IF NOT EXISTS xnet_aiops_clm_jenkins_version (
 -- 初始数据
 -- ============================================================
 
-INSERT INTO xnet_aiops_usr_user (uid, username, password, phone, user_type, status)
-VALUES ('USR-GOAI-OPERATOR', 'goai_operator', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6CQARaY1.k0YGKISbVFnTUjXS', '17870171303', 'user', 'active');
-
+-- 主线只预置通用角色，账号与组织由管理员创建。 Seed generic roles only; administrators provision users and organizations.
 INSERT INTO xnet_aiops_usr_role (role_name, role_code, description) VALUES
 ('管理员', 'ADMIN', '系统管理员，拥有所有权限'),
 ('运维人员', 'OPERATOR', '运维操作人员，可管理集群和服务'),
 ('观察者', 'VIEWER', '只读权限，查看集群状态');
-
-INSERT INTO xnet_aiops_sys_tenant (uid, tenant_name, status)
-VALUES ('TEN-SYNAPXNET', 'SynapXnet', 1);
-
-INSERT INTO xnet_aiops_sys_department (uid, tenant_uid, dept_name, status)
-VALUES ('DEPT-SYNAPXNET-PLATFORM', 'TEN-SYNAPXNET', '智能平台部', 1);
-
-INSERT INTO xnet_aiops_sys_team (uid, dept_uid, team_name, status)
-VALUES ('TEAM-GOAI-INFRA', 'DEPT-SYNAPXNET-PLATFORM', 'GOAI Infrastructure 联合团队', 1);
-
-SET @aiops_competition_user_id = (
-  SELECT id FROM xnet_aiops_usr_user WHERE phone = '17870171303' LIMIT 1
-);
-SET @aiops_operator_role_id = (
-  SELECT id FROM xnet_aiops_usr_role WHERE role_code = 'OPERATOR' LIMIT 1
-);
-INSERT INTO xnet_aiops_usr_user_role_cluster (user_id, role_id, cluster_id)
-VALUES (@aiops_competition_user_id, @aiops_operator_role_id, 0);
-
-INSERT INTO xnet_aiops_usr_organization_membership (
-  user_id,
-  tenant_uid,
-  dept_uid,
-  team_uid,
-  status
-) VALUES (
-  @aiops_competition_user_id,
-  'TEN-SYNAPXNET',
-  'DEPT-SYNAPXNET-PLATFORM',
-  'TEAM-GOAI-INFRA',
-  1
-);
 
 -- ============================================================
 -- K8S - Kubernetes管理模块

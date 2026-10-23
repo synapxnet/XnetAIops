@@ -4,26 +4,20 @@
 
 **面向基础设施、服务与 Kubernetes 的智能运维平台**
 
-[![GOAI release](https://img.shields.io/badge/version-1.3.0-1677ff.svg)](https://github.com/synapxnet/XnetAIops/releases/tag/v1.3.0)
+[![Version](https://img.shields.io/badge/version-1.3.0-1677ff.svg)](https://github.com/synapxnet/XnetAIops/releases/tag/v1.3.0)
 [![Java](https://img.shields.io/badge/Java-17-e76f00.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.6-6db33f.svg)](https://spring.io/projects/spring-boot)
 [![License](https://img.shields.io/badge/license-MIT-2ea44f.svg)](./LICENSE)
 
-[在线体验](https://goai.xnetaiops.synapxnet.online) · [前端仓库 XnetAIops-web](https://github.com/synapxnet/XnetAIops-web/tree/v1.3.0) · [OpenXnet 开源社区](https://openxnet.synapxnet.com) · [查看许可](./LICENSE)
+[前端仓库 XnetAIops-web](https://github.com/synapxnet/XnetAIops-web/tree/v1.3.0) · [OpenXnet 开源社区](https://openxnet.synapxnet.com) · [查看许可](./LICENSE)
 
 </div>
 
-## GOAI 决赛版 · v1.3.0
+## 主线开发
 
-[发布页与校验文件](https://github.com/synapxnet/XnetAIops/releases/tag/v1.3.0) · [下载源码 ZIP](https://github.com/synapxnet/XnetAIops/releases/download/v1.3.0/XnetAIops-v1.3.0-source.zip) · [查看 v1.3.0 源码](https://github.com/synapxnet/XnetAIops/tree/v1.3.0) · [配套前端 XnetAIops-web](https://github.com/synapxnet/XnetAIops-web/releases/tag/v1.3.0) · [OpenXnet 桌面安装包](https://github.com/synapxnet/OpenXnet/releases/tag/v1.3.0)
+基于 v1.3.0 的平台功能继续演进，保留驻场 Agent、知识与 Skill 工作台、跨域取证、受控执行、独立验证、审计与恢复。主线默认不加载比赛账号、组织、固定场景或竞赛服务地址。
 
-> GOAI 产品版本为 **v1.3.0**。上方标签与对应源码 ZIP 提供本版源码和使用说明；程序构建与验收基线见交付文档。
-
-平台驻场 Agent 提供运维专业证据，由 OpenXnet 与 AgentTeams 组织跨域协作。后端以审批核验、资源版本、幂等与持久检查点约束受控执行，读取服务与执行服务分离。
-
-部署依赖、实测结果和能力边界见[程序验证基线、构建与交付说明](./docs/GOAI-FINALS-V1.3.0-SOURCE-DELIVERY.md)。发布源码不代表线上服务已重新部署。
-
-> 下方为历史界面截图，仅用于了解原有功能与布局，不作为 v1.3.0 新界面的验收证据。
+[主线迁移范围](./docs/MAINLINE-TRANSITION.md) · [历史发布](https://github.com/synapxnet/XnetAIops/releases)
 
 ![XnetAIops 集群 3D 概览](./docs/images/xnetaiops-overview.png)
 
@@ -88,12 +82,11 @@ XnetAIops/
 └── docker-compose.yml    # 容器编排
 ```
 
-## v1.3.0 获取与构建
+## 主线构建
 
-本节针对固定的 GOAI `v1.3.0`。环境为 JDK 17、Maven 3.9、MySQL 8.x、Redis 7.x；后端使用 Spring Boot 3.4.6 与 MyBatis。不要把默认 `display` 分支当作决赛源码：
+使用当前主线源码，环境为 JDK 17、Maven 3.9、MySQL 8.x、Redis 7.x；后端使用 Spring Boot 3.4.6 与 MyBatis。历史发布与主线配置相互独立。
 
 ```bash
-git clone --branch v1.3.0 --depth 1 https://github.com/synapxnet/XnetAIops.git
 cd XnetAIops
 mvn -B -DskipTests package
 ```
@@ -103,23 +96,22 @@ mvn -B -DskipTests package
 ### 部署准备与边界
 
 1. 准备外部 MySQL 和 Redis，按数据库实际状态审阅 `XnetAIops.sql`、K8s/DevOps 表和 `database/migrations`，先备份再执行所需初始化或迁移；仓库并非自动初始化的整套数据库镜像。
-2. 从 `.env.example` 创建本地配置，填写数据库、Redis、`K8S_ENCRYPTION_KEY` 等。USR 还要求 `JWT_SECRET`，当前通用 Compose 未传入该变量，须通过专用 override 或现有编排向 `aiops-usr-service` 注入；仅复制 `.env` 不能完成全部配置。
-3. 配套前端也获取 `v1.3.0` 并构建，将 `WEB_DIST_PATH` 指向其 `apps/web-antd/dist`。通用 Compose 的 Web 默认端口为 `81`；内部 USR 为 `9185`，CLM/HOM/SVM/MON/K8S/REG 分别为 `9181/9182/9183/9184/9186/9187`。公网经 HTTPS 网关访问，不把开发端口当作线上地址。
-4. 通用 Compose 只覆盖原生平台服务，不包含驻场 Agent、AgentTeams、审批服务或 reader/checkpoint 分工。驻场独立服务来自 OpenXnet 固定版本，须另配 `/api/resident/v1/` 网关转发；参考源码交付说明，不能声称单条 Compose 已复现完整决赛链路。
+2. 从 `.env.example` 创建本地配置，填写数据库、Redis、`K8S_ENCRYPTION_KEY` 等。USR 要求 `JWT_SECRET` 以及企业短信网关配置，Compose 会传入这些变量。
+3. 配套前端也使用同一主线源码并构建，将 `WEB_DIST_PATH` 指向其 `apps/web-antd/dist`。通用 Compose 的 Web 默认端口为 `81`；内部 USR 为 `9185`，CLM/HOM/SVM/MON/K8S/REG 分别为 `9181/9182/9183/9184/9186/9187`。公网经 HTTPS 网关访问，不把开发端口当作线上地址。
+4. 通用 Compose 只覆盖原生平台服务，不包含驻场 Agent、AgentTeams、审批服务或 reader/checkpoint 分工。驻场独立服务来自 OpenXnet 固定版本，须另配 `/api/resident/v1/` 网关转发；参考源码交付说明，不能声称单条 Compose 已复现完整协作链路。
 
-完成配置后再在隔离环境使用 `docker compose up -d --build` 和 `docker compose ps`。不要对已有比赛部署直接套用通用 Compose 覆盖当前状态。
+完成配置后再在隔离环境使用 `docker compose up -d --build` 和 `docker compose ps`。不要对已有部署直接套用通用 Compose 覆盖当前状态。
 
-## 在线体验与登录
+## 部署与登录
 
-- 当前 GOAI 演示入口：<https://goai.xnetaiops.synapxnet.online/#/auth/login>。
-- 演示手机号：`17870171303`；演示验证码：`000000`（6 位，仅用于本演示环境）。
-- 登录方式为“手机号 + 验证码”，不使用 OpenXnet 桌面端的密码登录。当前页面不发送短信，演示验证码由项目方约定。
-- 2026-09-18 已核验：登录成功，身份为 `goai_operator` / `OPERATOR`；页面标题为 `XnetAIops`，驻场状态返回 `platform=aiops`、`agentVersion=1.3.0`、`ONLINE`。
-- 此验证码只用于平台登录。AgentTeams 演示访问码、Live 执行授权和模型 API Key 是独立凭据，不可互换；后者不在公开 README 提供。
+使用当前部署环境提供的访问地址，网页 API 默认同源。登录调用 POST /api/usr/sms-code 发送一次性验证码，再使用 POST /api/usr/login 登录；身份、驻场状态接口分别为 /api/usr/user/info、/api/resident/v1/status。
 
-API 网关与网页同源，基址为 `https://goai.xnetaiops.synapxnet.online`。登录为 `POST /api/usr/login`；身份读取为 `GET /api/usr/user/info`；驻场状态为 `GET /api/resident/v1/status`，后两项使用平台登录返回的 Bearer 令牌。业务模块前缀为 `/api/clm`、`/api/hom`、`/api/svm`、`/api/mon`、`/api/k8s`、`/api/reg`。
+管理员需创建真实账号与组织成员关系，并配置 Redis、JWT_SECRET、XNET_SMS_GATEWAY_URL 和 XNET_SMS_GATEWAY_TOKEN。主线不预置任何通用验证码或公共登录账号。验证码 5 分钟有效、60 秒发送间隔、最多 5 次错误、成功后立即销毁。短信网关接收 POST JSON {phone, code, purpose: "login", expiresInSeconds: 300}，通过 Bearer token 鉴权，必须返回 HTTP 2xx 与 {"accepted": true}。未配置或发送失败时明确报错。
 
-本轮仅执行登录及身份/驻场状态读取，未执行业务变更或模型调用。`modelConfigured=true` 表示存在服务端配置，不等于本轮已验证模型推理。公共演示账号不应用作生产认证方案。
+驻场 Agent、审批、模型服务沿用各自配置与权限边界。前端跨平台导航使用 VITE_XNET_AIOPS_URL、VITE_XNET_DATAOPS_URL、VITE_XNET_MLOPS_URL；未配置则不显示对应外链。
+
+存量比赛预置身份可使用 [`database/maintenance/archive-competition-identities.sql`](database/maintenance/archive-competition-identities.sql) 先预览，再在独立备份后的维护窗口执行。它仅匹配未改变的种子身份，保留审计主体和业务资源，不按名称或手机号批量删除。详细迁移范围见 [`docs/MAINLINE-TRANSITION.md`](docs/MAINLINE-TRANSITION.md)。
+
 
 ## SynapXnet 开源生态
 

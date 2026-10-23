@@ -52,7 +52,7 @@ class ActualCurrentStateMigrationRoundTripTest {
         Path copy = temporary.resolve("actual-current.json");
         Files.write(copy, bytes, java.nio.file.StandardOpenOption.CREATE_NEW);
         try {
-            var controller = new CompetitionInferenceToolController(mock(GovernedApprovalVerifier.class), copy.toString(), expectedDigest);
+            var controller = rehearsal(new CompetitionInferenceToolController(mock(GovernedApprovalVerifier.class), copy.toString(), expectedDigest));
             var trackerField = CompetitionInferenceToolController.class.getDeclaredField("versionTracker");
             trackerField.setAccessible(true);
             var tracker = (GovernedResourceVersionTracker) trackerField.get(controller);
@@ -74,7 +74,7 @@ class ActualCurrentStateMigrationRoundTripTest {
             assertTrue(document.get("domainState").equals(actualDomains), "Actual domain values must round-trip exactly");
             assertTrue(Files.isRegularFile(temporary.resolve("actual-current.json.consumed")));
             assertThrows(IllegalStateException.class,
-                    () -> new CompetitionInferenceToolController(mock(GovernedApprovalVerifier.class), copy.toString(), expectedDigest));
+                    () -> rehearsal(new CompetitionInferenceToolController(mock(GovernedApprovalVerifier.class), copy.toString(), expectedDigest)));
         } finally {
             assertEquals(expectedDigest, digest(Files.readAllBytes(source)));
             assertFalse(Files.exists(source.resolveSibling(source.getFileName() + ".consumed")), "The original export must remain unconsumed");
@@ -84,5 +84,10 @@ class ActualCurrentStateMigrationRoundTripTest {
     /** 计算真实输入原字节摘要。 / Compute the digest of the actual input bytes. */
     private String digest(byte[] bytes) throws Exception {
         return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
+    }
+    /** 现有恢复回归明确使用离线演练，不改变生产默认。 Existing recovery regressions explicitly opt into rehearsal without changing production defaults. */
+    private static CompetitionInferenceToolController rehearsal(CompetitionInferenceToolController controller) {
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "rehearsalEnabled", true);
+        return controller;
     }
 }

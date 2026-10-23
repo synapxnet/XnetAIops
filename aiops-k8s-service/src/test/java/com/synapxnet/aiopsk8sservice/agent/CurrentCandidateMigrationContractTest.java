@@ -66,7 +66,7 @@ class CurrentCandidateMigrationContractTest {
     /** 只读初始化产生的合法域没有保留写入，也必须能够迁移。 / Migrate valid read-initialized domains even when no retained write exists. */
     @Test
     void preservesReadInitializedStateWithoutInventedWrites() throws Exception {
-        var original = new CompetitionInferenceToolController(verifier());
+        var original = rehearsal(new CompetitionInferenceToolController(verifier()));
         metrics(original, "inc_read", false);
         metrics(original, "inc_read", true);
         var document = exportCurrent(original);
@@ -153,11 +153,11 @@ class CurrentCandidateMigrationContractTest {
                 .getBytes(java.nio.charset.StandardCharsets.UTF_8);
         Path duplicateFile = writeBytes(duplicate);
         assertThrows(IllegalStateException.class,
-                () -> new CompetitionInferenceToolController(verifier(), duplicateFile.toString(), digest(duplicate)));
+                () -> rehearsal(new CompetitionInferenceToolController(verifier(), duplicateFile.toString(), digest(duplicate))));
         assertFalse(Files.exists(consumed(duplicateFile)));
         Path changed = writeBytes(text.getBytes(java.nio.charset.StandardCharsets.UTF_8));
         assertThrows(IllegalStateException.class,
-                () -> new CompetitionInferenceToolController(verifier(), changed.toString(), "0".repeat(64)));
+                () -> rehearsal(new CompetitionInferenceToolController(verifier(), changed.toString(), "0".repeat(64))));
         assertFalse(Files.exists(consumed(changed)));
     }
 
@@ -166,10 +166,10 @@ class CurrentCandidateMigrationContractTest {
     void rejectsConsumedCurrentSnapshot() throws Exception {
         byte[] bytes = JSON.writeValueAsBytes(exportCurrent(preparedController()));
         Path file = writeBytes(bytes);
-        new CompetitionInferenceToolController(verifier(), file.toString(), digest(bytes));
+        rehearsal(new CompetitionInferenceToolController(verifier(), file.toString(), digest(bytes)));
         assertTrue(Files.exists(consumed(file)));
         assertThrows(IllegalStateException.class,
-                () -> new CompetitionInferenceToolController(verifier(), file.toString(), digest(bytes)));
+                () -> rehearsal(new CompetitionInferenceToolController(verifier(), file.toString(), digest(bytes))));
     }
 
     /** 已服务过的非空目标必须拒绝恢复且原状态不变。 / Reject restoring a nonempty target while preserving its complete prior state. */
@@ -190,7 +190,7 @@ class CurrentCandidateMigrationContractTest {
 
     /** 从公开真实工具产生两个域、历史写入和未完成演练。 / Produce two domains, retained writes and an unfinished rehearsal through public tools. */
     private CompetitionInferenceToolController preparedController() {
-        var controller = new CompetitionInferenceToolController(verifier());
+        var controller = rehearsal(new CompetitionInferenceToolController(verifier()));
         tune(controller, "inc_retained", "write-first", "42", false);
         tune(controller, "inc_retained", "write-second", "43", false);
         tune(controller, "inc_rehearsal", "dry-pending", "44", true);
@@ -231,7 +231,7 @@ class CurrentCandidateMigrationContractTest {
     private CompetitionInferenceToolController restore(JsonNode document) throws Exception {
         byte[] bytes = JSON.writeValueAsBytes(document);
         Path file = writeBytes(bytes);
-        return new CompetitionInferenceToolController(verifier(), file.toString(), digest(bytes));
+        return rehearsal(new CompetitionInferenceToolController(verifier(), file.toString(), digest(bytes)));
     }
 
     /** 每次拒绝都独立使用新文件并检查未消费。 / Use a fresh file for each rejection and verify it was not consumed. */
@@ -239,7 +239,7 @@ class CurrentCandidateMigrationContractTest {
         byte[] bytes = JSON.writeValueAsBytes(document);
         Path file = writeBytes(bytes);
         assertThrows(IllegalStateException.class,
-                () -> new CompetitionInferenceToolController(verifier(), file.toString(), digest(bytes)));
+                () -> rehearsal(new CompetitionInferenceToolController(verifier(), file.toString(), digest(bytes))));
         assertFalse(Files.exists(consumed(file)));
     }
 
@@ -290,5 +290,10 @@ class CurrentCandidateMigrationContractTest {
     private <T> AgentContract.ToolRequest<T> request(String tool, String key, String resource, String version, boolean dryRun, T arguments) {
         return new AgentContract.ToolRequest<>("request-" + key, tool, arguments, "approval", "plan", "digest", key,
                 resource, 1L, version, "arguments-digest", false, "test", key, dryRun);
+    }
+    /** 现有恢复回归明确使用离线演练，不改变生产默认。 Existing recovery regressions explicitly opt into rehearsal without changing production defaults. */
+    private static CompetitionInferenceToolController rehearsal(CompetitionInferenceToolController controller) {
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "rehearsalEnabled", true);
+        return controller;
     }
 }

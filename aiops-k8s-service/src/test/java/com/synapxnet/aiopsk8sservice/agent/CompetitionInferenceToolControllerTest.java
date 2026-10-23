@@ -37,6 +37,33 @@ import static org.mockito.ArgumentMatchers.any;
 class CompetitionInferenceToolControllerTest {
     @TempDir Path temporary;
 
+    /** 默认拒绝读写固定演练状态且不触发审批服务。 Mainline rejects synthetic reads and writes without calling approval services. */
+    @Test
+    void mainlineRejectsSyntheticEvidenceAndExecution() {
+        var approval = mock(GovernedApprovalVerifier.class);
+        var mainline = new CompetitionInferenceToolController(approval);
+        assertEquals("EXECUTION_TARGET_NOT_CONFIGURED",
+                assertThrows(AgentContractException.class, () -> metrics(mainline, "inc_real")).getCode());
+        assertEquals("EXECUTION_TARGET_NOT_CONFIGURED",
+                assertThrows(AgentContractException.class, () -> tune(mainline, "inc_real", "key", "42", false)).getCode());
+        org.mockito.Mockito.verifyNoInteractions(approval);
+    }
+
+    /** 真实运行时分流在主线仍可用，无需开启固定演练。 Mainline retains real runtime delegation without enabling rehearsal. */
+    @Test
+    void mainlineRetainsRealRuntimePath() {
+        var mainline = new CompetitionInferenceToolController(mock(GovernedApprovalVerifier.class));
+        var runtime = mock(com.synapxnet.goai.contract.FeatureDriftRuntimeClient.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(mainline, "featureDriftRuntime", runtime);
+        when(runtime.handles(any(), any())).thenReturn(true);
+        String tool = "aiops.inference.metrics.get";
+        var expected = AgentContract.success(Map.<String, Object>of("observed", true),
+                new AgentContract.RequestContext("ws_real", "inc_real", "trace", tool, "read", "operator", "request"),
+                "runtime", "1", System.nanoTime());
+        when(runtime.<Map<String, Object>>invoke(any(), any())).thenReturn(expected);
+        org.junit.jupiter.api.Assertions.assertSame(expected, metrics(mainline, "inc_real"));
+    }
+
     /** 全局懒加载下迁移必须在首次业务访问前完成，且无关Bean继续懒加载；Migration must complete before first access under global lazy initialization while unrelated beans remain lazy. */
     @Test
     void lazyApplicationRestoresBeforeAnyBusinessAccess() throws Exception {
@@ -162,13 +189,13 @@ class CompetitionInferenceToolControllerTest {
         byte[] bytes = new ObjectMapper().writeValueAsBytes(document);
         Files.write(file, bytes);
         String digest = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
-        var migrated = new CompetitionInferenceToolController(verifier(), file.toString(), digest);
+        var migrated = rehearsal(new CompetitionInferenceToolController(verifier(), file.toString(), digest));
         assertEquals(tracker, tracker(migrated).snapshot());
         assertEquals("43", metrics(migrated, "inc_next").meta().resourceVersion());
         assertEquals("DYNAMIC_SHAPE_OPTIMIZED", recovery(migrated, "inc_next").data().get("runtimeProfile"));
         tune(migrated, "inc_original", "migrate", "42", false);
         assertEquals("43", metrics(migrated, "inc_next").meta().resourceVersion());
-        assertThrows(IllegalStateException.class, () -> new CompetitionInferenceToolController(verifier(), file.toString(), digest));
+        assertThrows(IllegalStateException.class, () -> rehearsal(new CompetitionInferenceToolController(verifier(), file.toString(), digest)));
     }
 
     /** 错误摘要不得消费迁移文件或开始提供服务；A digest mismatch must not consume the migration file or serve traffic. */
@@ -176,12 +203,12 @@ class CompetitionInferenceToolControllerTest {
     void rejectsTamperedMigrationBeforeConsumption() throws Exception {
         Path file = temporary.resolve("tampered.json");
         Files.writeString(file, "{}");
-        assertThrows(IllegalStateException.class, () -> new CompetitionInferenceToolController(verifier(), file.toString(), "b".repeat(64)));
+        assertThrows(IllegalStateException.class, () -> rehearsal(new CompetitionInferenceToolController(verifier(), file.toString(), "b".repeat(64))));
         assertFalse(Files.exists(temporary.resolve("tampered.json.consumed")));
     }
 
     /** 创建只替代审批远端的真实Controller；Create the real controller with only the external approval boundary mocked. */
-    private CompetitionInferenceToolController controller() { return new CompetitionInferenceToolController(verifier()); }
+    private CompetitionInferenceToolController controller() { return rehearsal(new CompetitionInferenceToolController(verifier())); }
 
     /** 建立确定性审批替身，业务CAS和状态仍真实执行；Provide deterministic approval while retaining real CAS and domain mutations. */
     private GovernedApprovalVerifier verifier() {
@@ -249,5 +276,10 @@ class CompetitionInferenceToolControllerTest {
     void rejectsUnconvergedCapacity() {
         assertFalse(CompetitionInferenceToolController.hasRecoveredInferenceState(
                 4, 12, 64, 100, true, false, "DYNAMIC_SHAPE_OPTIMIZED"));
+    }
+    /** 现有恢复回归明确使用离线演练，不改变生产默认。 Existing recovery regressions explicitly opt into rehearsal without changing production defaults. */
+    private static CompetitionInferenceToolController rehearsal(CompetitionInferenceToolController controller) {
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "rehearsalEnabled", true);
+        return controller;
     }
 }
